@@ -1,0 +1,6 @@
+{
+    "require": {
+        "klein/klein": "v1.2.0",
+        "j4mie/idiorm": "1.4.x"
+    }
+}
