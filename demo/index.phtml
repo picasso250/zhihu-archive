@@ -8,7 +8,7 @@
   }
   #header-wrap {
     height: 46px;
-    background-color: #CB3E3E;
+    background-color: #1955A2;
   }
   #header-wrap h1 {
     margin: 0;
@@ -30,6 +30,7 @@
   #SearchForm .row {
     width: 600px;
     margin-top: 6px;
+    margin-left: 20px;
   }
   #SearchForm * {
     float: left;
@@ -74,6 +75,7 @@
   }
 
   </style>
+  <link rel="stylesheet" type="text/css" href="css/<?= $style ?>.css">
   <script type="text/javascript" src="js/jquery-2.1.0.min.js"></script>
   <script type="text/javascript" src="js/bootstrap.min.js"></script>
 </head>
@@ -89,7 +91,7 @@
             <input placeholder="搜索问题" type="text" name="kw" class="form-control">
           </div>
           <div class="col-md-2">
-            <button class="btn btn-danger">搜索</button>
+            <button class="btn btn-<?= $style == 'red' ? 'danger' : 'primary' ?> ">搜索</button>
           </div>
         </div>
       </form>
