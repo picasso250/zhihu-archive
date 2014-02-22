@@ -24,10 +24,10 @@ delimiter $$
 CREATE TABLE `answer` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `q_id` int(10) unsigned DEFAULT NULL,
-  `user_id` int(10) unsigned DEFAULT NULL,
+  `user` varchar(255) DEFAULT NULL,
   `text` text,
   `create_time` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `idx_qu` (`q_id`,`user_id`)
+  UNIQUE KEY `idx_qu` (`q_id`,`user`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8$$
 
