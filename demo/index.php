@@ -20,4 +20,6 @@ $answers = ORM::forTable('answer')
 
 $style = _get('style', 'normal');
 
+$title = '知乎箱底';
+
 include __DIR__.'/index.phtml';

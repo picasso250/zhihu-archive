@@ -69,6 +69,7 @@ function get_page_num($content) {
 
 function get_username_list($content) {
     $dom = HTML5::loadHTML($content);
+    $ret = array();
     foreach ($dom->getElementsByTagName('a') as $key => $node) {
         $href = $node->getAttribute('href');
         if (preg_match('%/people/(.+)$%', $href, $matches)) {
