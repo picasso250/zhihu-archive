@@ -72,9 +72,12 @@ function get_page_num($content) {
 }
 
 function get($url, $opts = null) {
-    $filename = '/tmp/'.str_replace('/', '-', $url);
-    if (file_exists($filename)) {
-        return array(0, file_get_contents($filename));
+    $tmp = '/tmp';
+    if (is_dir($tmp)) {
+        $filename = $tmp.'/'.str_replace('/', '-', $url);
+        if (file_exists($filename)) {
+            return array(0, file_get_contents($filename));
+        }
     }
 
     $ch = curl_init($url);
@@ -83,7 +86,9 @@ function get($url, $opts = null) {
     if ($errno = curl_errno($ch)) {
         return array($errno, curl_error($ch));
     }
-    file_put_contents($filename, $content);
+    if (is_dir($tmp)) {
+        file_put_contents($filename, $content);
+    }
     return array(0, $content);
 }
 
