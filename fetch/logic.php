@@ -77,8 +77,8 @@ function save_answer_to_db($base_url, $username, $answer_link_list) {
         list($_, $content) = odie_get($url);
         list($question, $content) = parse_answer($content);
         echo "\t$question\n";
-        $stmt = $pdo->prepare('INSERT INTO question (title) VALUES (?) ON DUPLICATE KEY UPDATE title=?');
-        if (!$stmt->execute(array($question, $question))) {
+        $stmt = $pdo->prepare('INSERT INTO question (id, title) VALUES (?,?) ON DUPLICATE KEY UPDATE title=?');
+        if (!$stmt->execute(array($qid, $question, $question))) {
             print_r($stmt->errorInfo());
         }
 
