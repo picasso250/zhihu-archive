@@ -45,7 +45,7 @@ function get_answer_link_list($content) {
 function get_page_num($content) {
     $rs = preg_match_all('%<a href="\?page=(\d+)%', $content, $matches);
     if (!$rs) {
-        throw new Exception("num match fail", 1);
+        return 1;
     }
     return (int) max($matches[1]);
 }
@@ -60,4 +60,31 @@ function get_username_list($content) {
         }
     }
     return ($ret);
+}
+
+function save_answer_to_db($base_url, $username, $answer_link_list) {
+    global $pdo;
+    foreach ($answer_link_list as $url) {
+        echo "\t$url\n";
+        if (preg_match('%^/question/(\d+)/answer/(\d+)%', $url, $matches)) {
+            $qid = $matches[1];
+            $aid = $matches[2];
+        } else {
+            echo "$url not good\n";
+            exit(1);
+        }
+        $url = $base_url.$url;
+        list($_, $content) = odie_get($url);
+        list($question, $content) = parse_answer($content);
+        echo "\t$question\n";
+        $stmt = $pdo->prepare('INSERT INTO question (title) VALUES (?) ON DUPLICATE KEY UPDATE title=?');
+        if (!$stmt->execute(array($question, $question))) {
+            print_r($stmt->errorInfo());
+        }
+
+        $stmt = $pdo->prepare('INSERT INTO answer (q_id, user, text) VALUES (?,?,?) ON DUPLICATE KEY UPDATE text=?');
+        if (!$stmt->execute(array($qid, $username, $content, $content))) {
+            print_r($stmt->errorInfo());
+        }
+    }
 }
