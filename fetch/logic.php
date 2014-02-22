@@ -30,6 +30,23 @@ function parse_answer($content) {
     return array($question, $answer);
 }
 
+function parse_answer_pure($content) {
+    $dom = HTML5::loadHTML($content);
+    $answer = $dom->getElementById('zh-question-answer-wrap');
+    foreach ($answer->getElementsByTagName('div') as $div) {
+        if ($class = $div->getAttribute('class')) {
+            $class = explode(' ', $class);
+            if (in_array('zm-editable-content', $class)) {
+                $answer = $div->C14N();
+            }
+        }
+    }
+    $q = $dom->getElementById('zh-question-title');
+    $a = $q->getElementsByTagName('a')->item(0);
+    $question = $a->textContent;
+    return array($question, $answer);
+}
+
 function get_answer_link_list($content) {
     $dom = HTML5::loadHTML($content);
     $dom = $dom->getElementById('zh-profile-answer-list');
@@ -75,7 +92,7 @@ function save_answer_to_db($base_url, $username, $answer_link_list) {
         }
         $url = $base_url.$url;
         list($_, $content) = odie_get($url);
-        list($question, $content) = parse_answer($content);
+        list($question, $content) = parse_answer_pure($content);
         echo "\t$question\n";
         $stmt = $pdo->prepare('INSERT INTO question (id, title) VALUES (?,?) ON DUPLICATE KEY UPDATE title=?');
         if (!$stmt->execute(array($qid, $question, $question))) {

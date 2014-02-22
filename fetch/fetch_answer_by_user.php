@@ -29,7 +29,8 @@ foreach ($uids as $username) {
         foreach (range(2, $num) as $i) {
             echo "fetch page $i\n";
             $url_page = "$url?page=$i";
-            list($_, $content) = odie_get($url_page);
+            list($code, $content) = odie_get($url_page);
+            echo "$code\n";
             $link_list = get_answer_link_list($content);
             save_answer_to_db($base_url, $username, $link_list);
         }
