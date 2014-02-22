@@ -19,7 +19,7 @@ foreach ($uids as $username) {
     list($code, $content) = odie_get($url);
     if ($code == 404) {
         echo "没有这个用户 $username\n";
-        exit(1);
+        continue;
     }
     $link_list = get_answer_link_list($content);
     save_answer_to_db($base_url, $username, $link_list);
