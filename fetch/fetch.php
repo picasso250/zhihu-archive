@@ -8,7 +8,7 @@ $url = "$base_url/people/$username/answers";
 echo "fetch $username\n";
 list($_, $content) = get($url);
 $link_list = get_answer_link_list($content);
-save_answer($base_url, $link_list);
+save_answer($base_url, $username, $link_list);
 
 $num = get_page_num($content);
 if ($num > 1) {
@@ -17,17 +17,27 @@ if ($num > 1) {
         $url_page = "$url?page=$i";
         list($_, $content) = get($url_page);
         $link_list = get_answer_link_list($content);
-        save_answer($base_url, $link_list);
+        save_answer($base_url, $username, $link_list);
     }
 }
 
-function save_answer($base_url, $answer_link_list) {
+function save_answer($base_url, $username, $answer_link_list) {
     foreach ($answer_link_list as $url) {
         $url = $base_url.$url;
         list($_, $content) = get($url);
         list($question, $content) = parse_answer($content);
-        $content = '<link rel="stylesheet" href="http://static.zhihu.com/static/ver/f004e446ca569e4897e59cf26da3e2dc.z.css" type="text/css" media="screen,print" />'.$content;
-        file_put_contents("$question.html", $content);
+        echo "\t$question\n";
+        $content = '<link rel="stylesheet" href="http://static.zhihu.com/static/ver/f004e446ca569e4897e59cf26da3e2dc.z.css" type="text/css" media="screen,print" />'
+            .$content
+            .'<div><a href="'.$url.'">原链接</a></div>'
+            .'<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>'
+            .'<script>$("img").each(function(){$(this).attr("src",$(this).attr("data-actualsrc"))});</script>'
+            ;
+        $root = __DIR__."/$username";
+        if (!is_dir($root)) {
+            mkdir($root);
+        }
+        file_put_contents("$root/$question.html", $content);
     }
 }
 
