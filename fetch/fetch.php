@@ -1,12 +1,20 @@
 <?php
 
 require dirname(__DIR__)."/vendor/autoload.php";
+require (__DIR__)."/odie.php";
 
 $username = 'liuniandate';
+if (isset($argv[1])) {
+    $username = $argv[1];
+}
 $base_url = 'http://www.zhihu.com';
 $url = "$base_url/people/$username/answers";
 echo "fetch $username\n";
-list($_, $content) = get($url);
+list($code, $content) = odie_get($url);
+if ($code == 404) {
+    echo "没有这个用户 $username\n";
+    exit(1);
+}
 $link_list = get_answer_link_list($content);
 save_answer($base_url, $username, $link_list);
 
@@ -15,7 +23,7 @@ if ($num > 1) {
     foreach (range(2, $num) as $i) {
         echo "fetch page $i\n";
         $url_page = "$url?page=$i";
-        list($_, $content) = get($url_page);
+        list($_, $content) = odie_get($url_page);
         $link_list = get_answer_link_list($content);
         save_answer($base_url, $username, $link_list);
     }
@@ -24,7 +32,7 @@ if ($num > 1) {
 function save_answer($base_url, $username, $answer_link_list) {
     foreach ($answer_link_list as $url) {
         $url = $base_url.$url;
-        list($_, $content) = get($url);
+        list($_, $content) = odie_get($url);
         list($question, $content) = parse_answer($content);
         echo "\t$question\n";
         $content = '<link rel="stylesheet" href="http://static.zhihu.com/static/ver/f004e446ca569e4897e59cf26da3e2dc.z.css" type="text/css" media="screen,print" />'
@@ -69,26 +77,5 @@ function get_page_num($content) {
         throw new Exception("num match fail", 1);
     }
     return (int) max($matches[1]);
-}
-
-function get($url, $opts = null) {
-    $tmp = '/tmp';
-    if (is_dir($tmp)) {
-        $filename = $tmp.'/'.str_replace('/', '-', $url);
-        if (file_exists($filename)) {
-            return array(0, file_get_contents($filename));
-        }
-    }
-
-    $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    $content = curl_exec($ch);
-    if ($errno = curl_errno($ch)) {
-        return array($errno, curl_error($ch));
-    }
-    if (is_dir($tmp)) {
-        file_put_contents($filename, $content);
-    }
-    return array(0, $content);
 }
 
