@@ -16,6 +16,8 @@ function save_answer($base_url, $username, $answer_link_list) {
         if (!is_dir($root)) {
             mkdir($root);
         }
+        $question = mb_strimwidth($question, 0, 40, '...', 'utf8');
+        $question = str_replace('/', '-', $question);
         file_put_contents("$root/$question.html", $content);
     }
 }
