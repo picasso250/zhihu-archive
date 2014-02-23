@@ -22,12 +22,12 @@ foreach ($uids as $username) {
         continue;
     }
     $link_list = get_answer_link_list($content);
-    save_answer_to_db($base_url, $username, $link_list);
+    $rs = save_answer_to_db($base_url, $username, $link_list);
 
     $num = get_page_num($content);
     if ($num > 1) {
         foreach (range(2, $num) as $i) {
-            echo "fetch page $i\n";
+            echo "fetch page $i\t";
             $url_page = "$url?page=$i";
             list($code, $content) = odie_get($url_page);
             echo "$code\n";

@@ -35,6 +35,9 @@ function parse_answer($content) {
 function parse_answer_pure($content) {
     $dom = HTML5::loadHTML($content);
     $answer = $dom->getElementById('zh-question-answer-wrap');
+    if (empty($answer)) {
+        file_put_contents('last_error.html', $content);
+    }
     foreach ($answer->getElementsByTagName('div') as $div) {
         if ($class = $div->getAttribute('class')) {
             $class = explode(' ', $class);
@@ -85,7 +88,7 @@ function get_username_list($content) {
 function save_answer_to_db($base_url, $username, $answer_link_list) {
     global $pdo;
     foreach ($answer_link_list as $url) {
-        echo "\t$url\n";
+        echo "\t{$base_url}$url";
         if (preg_match('%^/question/(\d+)/answer/(\d+)%', $url, $matches)) {
             $qid = $matches[1];
             $aid = $matches[2];
@@ -94,7 +97,12 @@ function save_answer_to_db($base_url, $username, $answer_link_list) {
             exit(1);
         }
         $url = $base_url.$url;
-        list($_, $content) = odie_get($url);
+        list($code, $content) = odie_get($url);
+        echo "\t$code\n";
+        if ($code == 404 || $code == 504) {
+            list($code, $content) = odie_get($url);
+            echo "\t$code\n";
+        }
         list($question, $content) = parse_answer_pure($content);
         echo "\t$question\n";
         $stmt = $pdo->prepare('INSERT INTO question (id, title) VALUES (?,?) ON DUPLICATE KEY UPDATE title=?');
