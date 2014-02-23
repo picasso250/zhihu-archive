@@ -30,7 +30,7 @@ foreach ($uids as $username) {
         }
     }
     
-    $stmt = $pdo->prepare('update question set avatar=? where name=?');
+    $stmt = $pdo->prepare('update user set avatar=? where name=?');
     if (!$stmt->execute(array($src, $username))) {
         print_r($stmt->errorInfo());
     }

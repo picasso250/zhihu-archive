@@ -46,10 +46,15 @@ function parse_answer_pure($content) {
             }
         }
     }
+    
     $q = $dom->getElementById('zh-question-title');
     $a = $q->getElementsByTagName('a')->item(0);
     $question = $a->textContent;
-    return array($question, $answer);
+    
+    $descript = $dom->getElementById('zh-question-detail');
+    $descript = $descript->getElementsByTagName('div')->item(0)->C14N();
+    
+    return array($question, $descript, $answer);
 }
 
 function get_answer_link_list($content) {
@@ -99,19 +104,26 @@ function save_answer_to_db($base_url, $username, $answer_link_list) {
         $url = $base_url.$url;
         list($code, $content) = odie_get($url);
         echo "\t$code\n";
-        if ($code == 404 || $code == 504) {
+        // 自动重刷
+        $i = 0;
+        while ($code == 404 || $code == 504) {
             list($code, $content) = odie_get($url);
             echo "\t$code\n";
+            if ($i > 5) {
+                echo 'can not fetch',"\n";
+                return false;
+            }
+            $i++;
         }
-        list($question, $content) = parse_answer_pure($content);
+        list($question, $descript, $content) = parse_answer_pure($content);
         echo "\t$question\n";
-        $stmt = $pdo->prepare('INSERT INTO question (id, title) VALUES (?,?) ON DUPLICATE KEY UPDATE title=?');
-        if (!$stmt->execute(array($qid, $question, $question))) {
+        $stmt = $pdo->prepare('INSERT INTO question (id, title, description) VALUES (?,?,?) ON DUPLICATE KEY UPDATE title=?,description=?');
+        if (!$stmt->execute(array($qid, $question, $descript, $question, $descript))) {
             print_r($stmt->errorInfo());
         }
 
-        $stmt = $pdo->prepare('INSERT INTO answer (q_id, user, text) VALUES (?,?,?) ON DUPLICATE KEY UPDATE text=?');
-        if (!$stmt->execute(array($qid, $username, $content, $content))) {
+        $stmt = $pdo->prepare('INSERT INTO answer (id, q_id, user, text) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE text=?');
+        if (!$stmt->execute(array($aid, $qid, $username, $content, $content))) {
             print_r($stmt->errorInfo());
         }
     }

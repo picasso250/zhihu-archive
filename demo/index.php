@@ -15,6 +15,8 @@ ORM::configure('driver_options', array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAME
 $answers = ORM::forTable('answer')
     ->join('question', array('answer.q_id', '=', 'question.id'))
     ->join('user', array('answer.user', '=', 'user.name'))
+    ->select('*')
+    ->select('answer.id', 'aid')
     ->limit(10)
     ->findMany();
 
