@@ -22,6 +22,10 @@ foreach ($uids as $username) {
         echo "没有这个用户 $username\n";
         continue;
     }
+    if ($code != 200) {
+        echo "奇奇怪怪的返回码 $code\n";
+        continue;
+    }
     
     $dom = HTML5::loadHTML($content);
     $dom = $dom->getElementById('zh-pm-page-wrap');

@@ -125,7 +125,7 @@ function save_answer_to_db($base_url, $username, $answer_link_list) {
             return false;
         }
         list($question, $descript, $content, $vote) = parse_answer_pure($content);
-        echo "\t^$vote $question\n";
+        echo "\t^$vote\t$question\n";
         $stmt = $pdo->prepare('INSERT INTO question (id, title, description) VALUES (?,?,?) ON DUPLICATE KEY UPDATE title=?,description=?');
         if (!$stmt->execute(array($qid, $question, $descript, $question, $descript))) {
             print_r($stmt->errorInfo());
