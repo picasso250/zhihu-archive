@@ -50,6 +50,10 @@ foreach ($uids as $username) {
             $url_page = "$url?page=$i";
             list($code, $content) = odie_get($url_page);
             echo "$code\n";
+            if ($code != 200) {
+                echo "奇奇怪怪的返回码 $code\n";
+                continue;
+            }
             $link_list = get_answer_link_list($content);
             save_answer_to_db($base_url, $username, $link_list);
         }
