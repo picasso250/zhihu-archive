@@ -106,7 +106,7 @@ function save_answer_to_db($base_url, $username, $answer_link_list) {
         echo "\t$code\n";
         // 自动重刷
         $i = 0;
-        while ($code == 404 || $code == 504) {
+        while ($code != 200) {
             list($code, $content) = odie_get($url);
             echo "\t$code\n";
             if ($i > 5) {
@@ -114,6 +114,10 @@ function save_answer_to_db($base_url, $username, $answer_link_list) {
                 return false;
             }
             $i++;
+        }
+        if (empty($content)) {
+            echo "content is empty\n";
+            return false;
         }
         list($question, $descript, $content) = parse_answer_pure($content);
         echo "\t$question\n";
