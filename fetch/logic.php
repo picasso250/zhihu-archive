@@ -34,16 +34,21 @@ function parse_answer($content) {
 
 function parse_answer_pure($content) {
     $dom = HTML5::loadHTML($content);
-    $answer = $dom->getElementById('zh-question-answer-wrap');
-    if (empty($answer)) {
+    $answerdom = $dom->getElementById('zh-question-answer-wrap');
+    if (empty($answerdom)) {
         file_put_contents('last_error.html', $content);
     }
-    foreach ($answer->getElementsByTagName('div') as $div) {
+    foreach ($answerdom->getElementsByTagName('div') as $div) {
         if ($class = $div->getAttribute('class')) {
             $class = explode(' ', $class);
             if (in_array('zm-editable-content', $class)) {
-                $answer = $div->C14N();
+                $answer= $div->C14N();
             }
+        }
+    }
+    foreach ($answerdom->getElementsByTagName('span') as $span) {
+        if ($class = $span->getAttribute('class') == 'count') {
+            $vote = intval($span->textContent);
         }
     }
     
@@ -54,7 +59,7 @@ function parse_answer_pure($content) {
     $descript = $dom->getElementById('zh-question-detail');
     $descript = $descript->getElementsByTagName('div')->item(0)->C14N();
     
-    return array($question, $descript, $answer);
+    return array($question, $descript, $answer, $vote);
 }
 
 function get_answer_link_list($content) {
@@ -119,15 +124,15 @@ function save_answer_to_db($base_url, $username, $answer_link_list) {
             echo "content is empty\n";
             return false;
         }
-        list($question, $descript, $content) = parse_answer_pure($content);
-        echo "\t$question\n";
+        list($question, $descript, $content, $vote) = parse_answer_pure($content);
+        echo "\t^$vote $question\n";
         $stmt = $pdo->prepare('INSERT INTO question (id, title, description) VALUES (?,?,?) ON DUPLICATE KEY UPDATE title=?,description=?');
         if (!$stmt->execute(array($qid, $question, $descript, $question, $descript))) {
             print_r($stmt->errorInfo());
         }
 
-        $stmt = $pdo->prepare('INSERT INTO answer (id, q_id, user, text) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE text=?');
-        if (!$stmt->execute(array($aid, $qid, $username, $content, $content))) {
+        $stmt = $pdo->prepare('INSERT INTO answer (id, q_id, user, text, vote) VALUES (?,?,?,?,?) ON DUPLICATE KEY UPDATE text=?, vote=?');
+        if (!$stmt->execute(array($aid, $qid, $username, $content, $vote, $content, $vote))) {
             print_r($stmt->errorInfo());
         }
     }

@@ -66,6 +66,7 @@ body {
 }
 .summary {
   margin-left: 61px;
+  min-height: 33px;
 }
 a.external {
   background-position: center right;

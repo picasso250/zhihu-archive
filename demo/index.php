@@ -17,6 +17,7 @@ $answers = ORM::forTable('answer')
     ->join('user', array('answer.user', '=', 'user.name'))
     ->select('*')
     ->select('answer.id', 'aid')
+        ->whereGt('answer.vote', 1000)
     ->limit(10)
     ->findMany();
 
