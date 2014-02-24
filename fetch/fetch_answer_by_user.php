@@ -15,8 +15,9 @@ $uids = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
 foreach ($uids as $username) {
     $url = "$base_url/people/$username/answers";
-    echo "fetch $username\n";
+    echo "fetch $username\t";
     list($code, $content) = odie_get($url);
+    echo "$code\n";
     if ($code == 404) {
         echo "没有这个用户 $username\n";
         continue;
