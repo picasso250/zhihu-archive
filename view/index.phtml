@@ -32,15 +32,14 @@
       <?php foreach ($answers as $key => $answer): ?>
       <div class="question-item">
         <div class="question">
-          <a href="http://www.zhihu.com/question/<?= $answer->q_id ?>" target="_blank" class=" external"><?= htmlspecialchars($answer->title) ?></a>
+          <a href="http://www.zhihu.com/question/<?= $answer->q_id ?>/answer/<?= $answer->aid ?>" target="_blank" class=" external"><?= htmlspecialchars($answer->title) ?></a>
         </div>
         <a href="http://www.zhihu.com/people/<?= $answer->user ?>" class="avatar">
-          <img src="<?= $answer->avatar ?>">
+          <img src="">
         </a>
         <a href="http://www.zhihu.com/people/<?= $answer->user ?>" target="_blank" class="name"><?= htmlspecialchars($answer->nick_name) ?></a>
         <div class="summary">
-          <?= mb_strimwidth(strip_tags($answer->text), 0, 128, '...', 'utf8'); ?>
-          <a target="_blank" href="http://www.zhihu.com/question/<?= $answer->q_id ?>/answer/<?= $answer->aid ?>" class="more-btn">查看详细</a>
+          <?= mb_strimwidth(strip_tags(html_entity_decode($answer->text)), 0, 173, '...', 'utf8'); ?>
         </div>
       </div>
       <?php endforeach ?>

@@ -1,7 +1,7 @@
 <?php
 
 function odie_get($url, $opts = null) {
-    $tmp = '/tmp';
+    $tmp = __DIR__.'/cache';
     if (is_dir($tmp)) {
         $filename = $tmp.'/'.str_replace('/', '-', $url);
         if (file_exists($filename)) {

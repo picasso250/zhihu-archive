@@ -1,0 +1,62 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title><?= $title ?></title>
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <link rel="stylesheet" type="text/css" href="css/<?= $style ?>.css">
+  <script type="text/javascript" src="js/jquery-2.1.0.min.js"></script>
+  <script type="text/javascript" src="js/bootstrap.min.js"></script>
+</head>
+<body>
+  <div>
+    <div class="center-wrap">
+      <h1>
+        <a href="/">知乎箱底</a>
+      </h1>
+      <form class="form-inline">
+        <div class="row">
+          <div class="form-group">
+            <input placeholder="搜索问题" type="text" name="kw" class="form-control" value="<?= $kw ?>">
+          </div>
+          <div class="form-group">
+            <select name="upvote" class="form-control">
+              <option value="">不限</option>
+              <?php foreach (array(500, 1000) as $key => $i): ?>
+              <option value="<?= $i ?>" <?= _get('upvote') == $i ? 'selected' : '' ?>><?= $i ?>赞以上</option>
+              <?php endforeach ?>
+            </select>
+          </div>
+          <div class="form-group">
+            <button class="btn btn-<?= $style == 'red' ? 'danger' : 'primary' ?> ">搜索</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="clearfix">
+    <div class="center-wrap clearfix">
+      <?php foreach ($answers as $key => $answer): ?>
+      <div class="question-item">
+        <div class="question">
+          <a href="http://www.zhihu.com/question/<?= $answer->q_id ?>/answer/<?= $answer->aid ?>" target="_blank" class=" external"><?= htmlspecialchars($answer->title) ?></a>
+        </div>
+        <a href="http://www.zhihu.com/people/<?= $answer->user ?>" target="_blank" class="name"><?= htmlspecialchars($answer->nick_name) ?></a>
+        <div class="summary">
+          <?= mb_strimwidth(strip_tags(html_entity_decode($answer->text)), 0, 173, '...', 'utf8'); ?>
+        </div>
+        <?php if (!$answer->has_upload): ?>
+        <a href="javascript:void(0)" class="btn btn-default">上传</a>
+        <?php endif ?>
+      </div>
+      <?php endforeach ?>
+    </div>
+  </div>
+  <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+  <script>
+  $("img").each(function(){$(this).attr("src",$(this).attr("data-actualsrc"))});
+  </script>
+
+</body>
+</html>
