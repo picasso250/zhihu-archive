@@ -1,4 +1,7 @@
 <?php
+
+namespace model;
+
 // logic of mongodb
 class User
 {
@@ -26,6 +29,7 @@ class User
             return true;
         }
         $u = self::getTable();
+        $args['has_fetch'] = true;
         $newdata = array('$set' => $args);
         $rs = $u->update(array("username" => $username), $newdata, array('upsert' => true));
         if (!$rs['ok']) {
@@ -36,7 +40,12 @@ class User
     public static function getUids()
     {
         $u = self::getTable();
-        $c = $u->find()->fields(array('name' => true));
+        $where = array(
+            'has_fetch' => array('$exists' => false),
+            'name' => array('$exists' => true),
+        );
+        $c = $u->find($where)->fields(array('name' => true));
+        // var_dump(iterator_to_array($c));exit;
         $ret = array();
         foreach ($c as $v) {
             $ret[] = $v['name'];

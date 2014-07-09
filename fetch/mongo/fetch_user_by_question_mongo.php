@@ -1,13 +1,10 @@
 <?php
 
-require dirname(__DIR__)."/vendor/autoload.php";
-require (__DIR__)."/odie.php";
-require (__DIR__)."/logic.php";
-require (__DIR__)."/db_init.php";
+require dirname(dirname(__DIR__))."/vendor/autoload.php";
+require dirname(__DIR__)."/odie.php";
+require dirname(__DIR__)."/logic.php";
 require (__DIR__)."/lib_mongodb.php";
-require (__DIR__)."/Question.php";
-require (__DIR__)."/Answer.php";
-require (__DIR__)."/User.php";
+require (__DIR__)."/autoload.php";
 
 $base_url = 'http://www.zhihu.com';
 
@@ -22,7 +19,6 @@ foreach ($ids as $qid) {
     foreach ($username_list as $username => $nickname) {
         echo "\t$username ==> $nickname\n";
         User::saveUser($username, $nickname);
-        
     }
 }
 
