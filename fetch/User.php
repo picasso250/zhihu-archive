@@ -36,9 +36,12 @@ class User
     public static function getUids()
     {
         $u = self::getTable();
-        $c = $u->find();
-        var_dump($c);
-        return $c;
+        $c = $u->find()->fields(array('name' => true));
+        $ret = array();
+        foreach ($c as $v) {
+            $ret[] = $v['name'];
+        }
+        return $ret;
     }
 
 }
