@@ -29,7 +29,6 @@ class User
             return true;
         }
         $u = self::getTable();
-        $args['has_fetch'] = true;
         $newdata = array('$set' => $args);
         $rs = $u->update(array("username" => $username), $newdata, array('upsert' => true));
         if (!$rs['ok']) {

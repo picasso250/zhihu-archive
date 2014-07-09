@@ -60,4 +60,5 @@ foreach ($uids as $username) {
             Answer::saveAnswer($base_url, $username, $link_list);
         }
     }
+    User::updateByUserName($username, array('has_fetch' => true));
 }

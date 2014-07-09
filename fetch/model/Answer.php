@@ -27,7 +27,7 @@ class Answer
             }
             $url = $base_url.$url;
             list($code, $content) = odie_get($url);
-            echo "\t$code\n";
+            echo "\t[$code]\n";
             // 自动重刷
             $i = 0;
             while ($code != 200) {
@@ -44,12 +44,11 @@ class Answer
                 return false;
             }
             list($question, $descript, $content, $vote) = parse_answer_pure($content);
-            echo "\t^$vote\t$question\n";
+            echo "\t^$vote\t$question\n\n";
 
             Question::saveQuestion($qid, $question, $descript);
 
             Answer::_saveAnswer($aid, $qid, $username, $content, $vote);
-            
         }
     }
 }
