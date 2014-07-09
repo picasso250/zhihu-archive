@@ -37,7 +37,7 @@ class Answer
             $q = get_table('question');
             $update = array('title' => $question, 'description' => $descript);
             $where = array('id' => $qid, 'title' => $question, 'description' => $descript);
-            $rs = $q->update($where, array('$set' => $update));
+            $rs = $q->update($where, array('$set' => $update), true);
             if (!$rs['ok']) {
                 echo basename(__FILE__).':'.__LINE__.' '.$rs['err']."\n";
             }
@@ -45,7 +45,7 @@ class Answer
             $a = get_table('answer');
             $update = array('id' => $aid, 'q_id' => $qid, 'user' => $username, 'text' => $content, 'vote' => $vote);
             $where = array('text' => $content, 'vote' => $vote);
-            $rs = $a->update($where, array('$set' => $update));
+            $rs = $a->update($where, array('$set' => $update), true);
             if (!$rs['ok']) {
                 echo basename(__FILE__).':'.__LINE__.' '.$rs['err']."\n";
             }

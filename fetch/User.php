@@ -6,6 +6,20 @@ class User
     {
         return get_table('user');
     }
+
+    public static function saveUser($username, $nickname)
+    {
+        $u = self::getTable();
+        $update = array('name' => $username, 'nick_name' => $nickname);
+        $where = array('nick_name' => $nickname);
+        $rs = $u->update($where, array('$set' => $update), true);
+        if (!$rs['ok']) {
+            echo basename(__FILE__).':'.__LINE__.' '.$rs['err']."\n";
+        }
+        
+        return $rs;
+    }
+
     public static function updateByUserName($username, $args)
     {
         if (empty($args)) {
