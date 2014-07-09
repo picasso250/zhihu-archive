@@ -27,18 +27,18 @@ class Answer
             }
             $url = $base_url.$url;
             list($code, $content) = odie_get($url);
-            echo "\t[$code]\n";
             // 自动重刷
             $i = 0;
             while ($code != 200) {
                 list($code, $content) = odie_get($url);
-                echo "\t$code\n";
+                echo "\t[$code]";
                 if ($i > 5) {
                     echo 'can not fetch',"\n";
                     return false;
                 }
                 $i++;
             }
+            echo "\t[$code]\n";
             if (empty($content)) {
                 echo "content is empty\n";
                 return false;

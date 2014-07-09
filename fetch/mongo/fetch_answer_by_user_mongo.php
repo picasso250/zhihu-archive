@@ -22,7 +22,7 @@ foreach ($uids as $username) {
     $url = "$base_url/people/$username/answers";
     echo "fetch $username\t";
     list($code, $content) = odie_get($url);
-    echo "$code\n";
+    echo "[$code]\n\n";
     if ($code == 404) {
         echo "没有这个用户 $username\n";
         continue;
@@ -51,7 +51,7 @@ foreach ($uids as $username) {
             echo "fetch page $i\t";
             $url_page = "$url?page=$i";
             list($code, $content) = odie_get($url_page);
-            echo "$code\n";
+            echo "[$code]\n\n";
             if ($code != 200) {
                 echo "奇奇怪怪的返回码 $code\n";
                 continue;
