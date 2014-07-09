@@ -4,6 +4,7 @@ require dirname(__DIR__)."/vendor/autoload.php";
 require (__DIR__)."/odie.php";
 require (__DIR__)."/logic.php";
 require (__DIR__)."/db_init.php";
+require (__DIR__)."/lib_mongodb.php";
 require (__DIR__)."/Question.php";
 require (__DIR__)."/Answer.php";
 require (__DIR__)."/User.php";

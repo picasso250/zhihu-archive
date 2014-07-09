@@ -9,8 +9,11 @@ class Question
     public static function getIds()
     {
         $c = self::getTable();
-        $c = $c->find();
-        var_dump($c);
-        return $c;
+        $c = $c->find()->fields(array('id' => true));
+        $ret = array();
+        foreach ($c as $v) {
+            $ret[] = $v['id'];
+        }
+        return $ret;
     }
 }

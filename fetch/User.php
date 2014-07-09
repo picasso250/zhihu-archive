@@ -12,7 +12,7 @@ class User
         $u = self::getTable();
         $update = array('name' => $username, 'nick_name' => $nickname);
         $where = array('nick_name' => $nickname);
-        $rs = $u->update($where, array('$set' => $update), true);
+        $rs = $u->update($where, array('$set' => $update), array('upsert' => true));
         if (!$rs['ok']) {
             echo basename(__FILE__).':'.__LINE__.' '.$rs['err']."\n";
         }
@@ -27,7 +27,7 @@ class User
         }
         $u = self::getTable();
         $newdata = array('$set' => $args);
-        $rs = $u->update(array("username" => $username), $newdata);
+        $rs = $u->update(array("username" => $username), $newdata, array('upsert' => true));
         if (!$rs['ok']) {
             echo basename(__FILE__).':'.__LINE__.' '.$rs['err']."\n";
         }
