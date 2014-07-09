@@ -30,12 +30,13 @@ class User
         }
         $u = self::getTable();
         $newdata = array('$set' => $args);
-        $rs = $u->update(array("username" => $username), $newdata, array('upsert' => true));
+        $rs = $u->update(array("name" => $username), $newdata, array('upsert' => true));
         if (!$rs['ok']) {
             echo basename(__FILE__).':'.__LINE__.' '.$rs['err']."\n";
         }
         return $rs;
     }
+    
     public static function getUids()
     {
         $u = self::getTable();
