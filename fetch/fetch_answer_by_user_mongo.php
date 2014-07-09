@@ -4,17 +4,16 @@ require dirname(__DIR__)."/vendor/autoload.php";
 require (__DIR__)."/odie.php";
 require (__DIR__)."/logic.php";
 require (__DIR__)."/db_init.php";
+require (__DIR__)."/lib_mongodb.php";
+require (__DIR__)."/User.php";
+require (__DIR__)."/Answer.php";
 
 $base_url = 'http://www.zhihu.com';
 
 if (isset($argv[1]) && $argv[1]) {
     $uids = array($argv[1]);
 } else {
-    $stmt = $pdo->prepare('select name from user');
-    if (!$stmt->execute()) {
-        print_r($stmt->errorInfo());
-    }
-    $uids = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    $uids = User::getUids();
 }
 
 foreach ($uids as $username) {
@@ -39,13 +38,10 @@ foreach ($uids as $username) {
         }
     }
     
-    $stmt = $pdo->prepare('update user set avatar=? where name=?');
-    if (!$stmt->execute(array($src, $username))) {
-        print_r($stmt->errorInfo());
-    }
+    User::updateByUserName($username, array('avatar' => $src));
 
     $link_list = get_answer_link_list($content);
-    $rs = save_answer_to_db($base_url, $username, $link_list);
+    $rs = Answer::saveAnswer($base_url, $username, $link_list);
 
     $num = get_page_num($content);
     if ($num > 1) {
@@ -59,7 +55,7 @@ foreach ($uids as $username) {
                 continue;
             }
             $link_list = get_answer_link_list($content);
-            save_answer_to_db($base_url, $username, $link_list);
+            Answer::saveAnswer($base_url, $username, $link_list);
         }
     }
 }
