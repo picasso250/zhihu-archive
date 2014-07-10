@@ -21,7 +21,7 @@ if (isset($argv[1]) && $argv[1]) {
 foreach ($uids as $username) {
     $url = "$base_url/people/$username/answers";
     echo "fetch $username\t";
-    list($code, $content) = odie_get($url);
+    list($code, $content) = uget($url);
     echo "[$code]\n\n";
     if ($code == 404) {
         echo "没有这个用户 $username\n";
@@ -50,7 +50,8 @@ foreach ($uids as $username) {
         foreach (range(2, $num) as $i) {
             echo "fetch page $i\t";
             $url_page = "$url?page=$i";
-            list($code, $content) = odie_get($url_page);
+            list($code, $content) = uget($url_page);
+            slog("$url_page [$code]");
             echo "[$code]\n\n";
             if ($code != 200) {
                 echo "奇奇怪怪的返回码 $code\n";

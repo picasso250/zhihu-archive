@@ -1,3 +1,4 @@
 /vendor
 /nbproject/private/
 /fetch/cache
+fetch/mongo/fetch.log
