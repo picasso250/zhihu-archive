@@ -41,10 +41,12 @@ class Answer
             echo "\t[$code]\n";
             if (empty($content)) {
                 echo "content is empty\n";
+                slog("$url [$code] empty");
                 return false;
             }
             list($question, $descript, $content, $vote) = parse_answer_pure($content);
             echo "\t^$vote\t$question\n\n";
+            slog("$url [$code] ^$vote\t$question");
 
             Question::saveQuestion($qid, $question, $descript);
 
