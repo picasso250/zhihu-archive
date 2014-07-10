@@ -17,7 +17,6 @@ class Answer
 
     public static function saveAnswer($base_url, $username, $answer_link_list) {
         foreach ($answer_link_list as $url) {
-            echo "\t{$base_url}$url";
             if (preg_match('%^/question/(\d+)/answer/(\d+)%', $url, $matches)) {
                 $qid = $matches[1];
                 $aid = $matches[2];
@@ -26,6 +25,7 @@ class Answer
                 exit(1);
             }
             $url = $base_url.$url;
+            echo "\r$url";
             list($code, $content) = odie_get($url);
             // 自动重刷
             $i = 0;
@@ -38,14 +38,13 @@ class Answer
                 }
                 $i++;
             }
-            echo "\t[$code]\n";
+            echo "\t[$code]";
             if (empty($content)) {
                 echo "content is empty\n";
                 slog("$url [$code] empty");
                 return false;
             }
             list($question, $descript, $content, $vote) = parse_answer_pure($content);
-            echo "\t^$vote\t$question\n\n";
             slog("$url [$code] ^$vote\t$question");
 
             Question::saveQuestion($qid, $question, $descript);

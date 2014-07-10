@@ -20,7 +20,7 @@ if (isset($argv[1]) && $argv[1]) {
 
 foreach ($uids as $username) {
     $url = "$base_url/people/$username/answers";
-    echo "fetch $username\t";
+    echo "\nfetch $username\t";
     list($code, $content) = uget($url);
     echo "[$code]\n\n";
     if ($code == 404) {
@@ -48,7 +48,7 @@ foreach ($uids as $username) {
     $num = get_page_num($content);
     if ($num > 1) {
         foreach (range(2, $num) as $i) {
-            echo "fetch page $i\t";
+            echo "\nfetch page $i\t";
             $url_page = "$url?page=$i";
             list($code, $content) = uget($url_page);
             slog("$url_page [$code]");
