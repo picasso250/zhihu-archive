@@ -24,10 +24,12 @@ foreach ($uids as $username) {
     list($code, $content) = uget($url);
     echo "[$code]\n\n";
     if ($code == 404) {
+        User::updateByUserName($username, array('has_fetch' => true, 'fetch_fail' => true));
         echo "没有这个用户 $username\n";
         continue;
     }
     if ($code != 200) {
+        User::updateByUserName($username, array('has_fetch' => true, 'fetch_fail' => true));
         echo "奇奇怪怪的返回码 $code\n";
         continue;
     }
