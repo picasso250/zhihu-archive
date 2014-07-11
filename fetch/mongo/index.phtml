@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>q</title>
+</head>
+<body>
+<ul>
+  <?php foreach ($data as $e): ?>
+    <li>
+      <div><?= $e['question']['title'] ?></div>
+      <ul>
+        <?php foreach ($e['answers'] as $a): ?>
+          <li>
+            <div><?= $a['vote'] ?></div>
+            <div><?= $a['user'] ?></div>
+            <?= $a['text'] ?>
+          </li>
+        <?php endforeach ?>
+      </ul>
+    </li>
+  <?php endforeach ?>
+</ul>
+</body>
+</html>

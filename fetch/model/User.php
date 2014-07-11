@@ -45,7 +45,6 @@ class User
             'name' => array('$exists' => true),
         );
         $c = $u->find($where)->fields(array('name' => true));
-        // var_dump(iterator_to_array($c));exit;
         $ret = array();
         foreach ($c as $v) {
             $ret[] = $v['name'];
