@@ -20,11 +20,11 @@ if (isset($argv[1]) && $argv[1]) {
 
 $count = count($uids);
 echo "there are $count user to fetch\n";
-$i = 0;
+$n = 0;
 foreach ($uids as $username) {
-    $i++;
+    $n++;
     $url = "$base_url/people/$username/answers";
-    echo "\nfetch No.$i $username\t";
+    echo "\nfetch No.$n $username\t";
     list($code, $content) = uget($url);
     echo "[$code]\n";
     if ($code == 404) {
