@@ -26,6 +26,7 @@ class Answer
             }
             $url = $base_url.$url;
             echo "\r$url";
+            $t = microtime(true);
             list($code, $content) = odie_get($url);
             // 自动重刷
             $i = 0;
@@ -39,6 +40,8 @@ class Answer
                 $i++;
             }
             echo "\t[$code]";
+            $t = intval((microtime(true) - $t) * 1000);
+            echo "\t$t ms";
             if (empty($content)) {
                 echo "content is empty\n";
                 slog("$url [$code] empty");
