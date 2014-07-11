@@ -16,7 +16,7 @@ function get_table($table)
     $t = $db->{$table};
     switch ($table) {
         case 'answer':
-            $t->ensureIndex(array('vote' => 1, 'q_id' => 1,));
+            $t->ensureIndex(array('vote' => -1, 'q_id' => -1,));
             break;
         
         default:

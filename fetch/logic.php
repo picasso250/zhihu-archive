@@ -66,6 +66,11 @@ function get_answer_link_list($content) {
     $dom = HTML5::loadHTML($content);
     $dom = $dom->getElementById('zh-profile-answer-list');
     $ret = array();
+    if (empty($dom)) {
+        echo "empty #zh-profile-answer-list\n";
+        slog('empty #zh-profile-answer-list');
+        return $ret;
+    }
     foreach ($dom->getElementsByTagName('a') as $key => $node) {
         if ($attr = $node->getAttribute('class') == 'question_link') {
             $ret[] = ($node->getAttribute('href'));
