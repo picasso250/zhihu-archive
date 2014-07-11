@@ -6,8 +6,8 @@ class Answer
 {
     public static function _saveAnswer($aid, $qid, $username, $content, $vote) {
         $a = get_table('answer');
-        $update = array('id' => $aid, 'q_id' => $qid, 'user' => $username, 'text' => $content, 'vote' => $vote);
-        $where = array('text' => $content, 'vote' => $vote);
+        $update = array('id' => $aid, 'q_id' => $qid, 'user' => $username, 'text' => $content, 'vote' => $vote, 'fetched' => time());
+        $where = array('id' => $aid);
         $rs = $a->update($where, array('$set' => $update), array('upsert' => true));
         if (!$rs['ok']) {
             echo basename(__FILE__).':'.__LINE__.' '.$rs['err']."\n";

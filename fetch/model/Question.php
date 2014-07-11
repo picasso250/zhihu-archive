@@ -21,11 +21,11 @@ class Question
         return $rs;
     }
 
-    public static function saveQuestion($qid, $question, $descript)
+    public static function saveQuestion($qid, $question, $description)
     {
         $q = self::getTable();
-        $update = array('title' => $question, 'description' => $descript);
-        $where = array('id' => $qid, 'title' => $question, 'description' => $descript);
+        $update = array('title' => $question, 'description' => $description, 'fetched' => time());
+        $where = array('id' => $qid);
         $rs = $q->update($where, array('$set' => $update), array('upsert' => true));
         if (!$rs['ok']) {
             echo basename(__FILE__).':'.__LINE__.' '.$rs['err']."\n";
