@@ -13,7 +13,17 @@ function get_collection()
 function get_table($table)
 {
     $db = get_collection();
-    return $db->{$table};
+    $t = $db->{$table};
+    switch ($table) {
+        case 'answer':
+            $t->createIndex(array('vote' => 1, 'q_id' => 1,));
+            break;
+        
+        default:
+            # code...
+            break;
+    }
+    return $t;
 }
 
 function slog($msg)

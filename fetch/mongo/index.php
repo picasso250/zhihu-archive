@@ -10,7 +10,8 @@ $a = get_table('answer');
 $questions = $q->find()->limit(1000);
 $i = 0;
 foreach ($questions as $q) {
-    $answers = $a->find(array('q_id' => $q['id']))->limit(3);
+    $where = array('q_id' => $q['id'], 'vote' => array('$gt' => 20));
+    $answers = $a->find($where)->limit(3);
     if ($answers->count()) {
         $data[] = array(
             'question' => $q,
