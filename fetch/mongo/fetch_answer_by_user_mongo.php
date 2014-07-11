@@ -18,11 +18,15 @@ if (isset($argv[1]) && $argv[1]) {
     $uids = User::getUids();
 }
 
+$count = count($uids);
+echo "there are $count user to fetch\n";
+$i = 0;
 foreach ($uids as $username) {
+    $i++;
     $url = "$base_url/people/$username/answers";
-    echo "\nfetch $username\t";
+    echo "\nfetch No.$i $username\t";
     list($code, $content) = uget($url);
-    echo "[$code]\n\n";
+    echo "[$code]\n";
     if ($code == 404) {
         User::updateByUserName($username, array('has_fetch' => true, 'fetch_fail' => true));
         echo "没有这个用户 $username\n";
@@ -54,7 +58,7 @@ foreach ($uids as $username) {
             $url_page = "$url?page=$i";
             list($code, $content) = uget($url_page);
             slog("$url_page [$code]");
-            echo "[$code]\n\n";
+            echo "[$code]\n";
             if ($code != 200) {
                 echo "奇奇怪怪的返回码 $code\n";
                 continue;
