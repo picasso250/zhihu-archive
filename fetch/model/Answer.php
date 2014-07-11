@@ -28,16 +28,9 @@ class Answer
             echo "\r$url";
             $t = microtime(true);
             list($code, $content) = odie_get($url);
-            // 自动重刷
-            $i = 0;
-            while ($code != 200) {
-                list($code, $content) = odie_get($url);
-                echo "\t[$code]";
-                if ($i > 5) {
-                    echo 'can not fetch',"\n";
-                    return false;
-                }
-                $i++;
+            if ($code != 200) { // fail fast
+                slog("$url [$code] error");
+                return false;
             }
             echo "\t[$code]";
             $t = intval((microtime(true) - $t) * 1000);
