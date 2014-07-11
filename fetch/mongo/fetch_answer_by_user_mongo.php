@@ -28,11 +28,13 @@ foreach ($uids as $username) {
     list($code, $content) = uget($url);
     echo "[$code]\n";
     if ($code == 404) {
+        slog("user $username fetch fail, code $code");
         User::updateByUserName($username, array('has_fetch' => true, 'fetch_fail' => true));
         echo "没有这个用户 $username\n";
         continue;
     }
     if ($code != 200) {
+        slog("user $username fetch fail, code $code");
         User::updateByUserName($username, array('has_fetch' => true, 'fetch_fail' => true));
         echo "奇奇怪怪的返回码 $code\n";
         continue;

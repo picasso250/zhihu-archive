@@ -18,7 +18,8 @@ function get_table($table)
 
 function slog($msg)
 {
-    return error_log(date('Y-m-d H:i:s')." $msg\n", 3, __DIR__.'/fetch.log');
+    $f = __DIR__.'/'.date('Ymd').'.log';
+    return error_log(date('Y-m-d H:i:s')." $msg\n", 3, $f);
 }
 
 function uget($url, $opts = null)
