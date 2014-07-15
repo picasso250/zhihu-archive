@@ -25,16 +25,17 @@ class Answer
                 exit(1);
             }
             $url = $base_url.$url;
-            echo "\r$url";
+            echo "\t$url";
             $t = microtime(true);
             list($code, $content) = odie_get($url);
+            echo "\t[$code]";
             if ($code != 200) { // fail fast
+                echo "\tfail\n";
                 slog("$url [$code] error");
                 return false;
             }
-            echo "\t[$code]";
             $t = intval((microtime(true) - $t) * 1000);
-            echo "\t$t ms";
+            echo "\t$t ms\n";
             if (empty($content)) {
                 echo "content is empty\n";
                 slog("$url [$code] empty");
