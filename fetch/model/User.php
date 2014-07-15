@@ -14,7 +14,7 @@ class User
     {
         $u = self::getTable();
         $update = array('name' => $username, 'nick_name' => $nickname);
-        $where = array('nick_name' => $nickname);
+        $where = array('name' => $username);
         $rs = $u->update($where, array('$set' => $update), array('upsert' => true));
         if (!$rs['ok']) {
             echo basename(__FILE__).':'.__LINE__.' '.$rs['err']."\n";

@@ -13,17 +13,19 @@ use model\Answer;
 $base_url = 'http://www.zhihu.com';
 
 $ids = Question::getIds();
+echo "there are ",count($ids)," questions to fetch\n";
 
 foreach ($ids as $qid) {
     $url = "$base_url/question/$qid";
-    echo "fetch $qid\n";
     list($code, $content) = odie_get($url);
+    echo "fetch $qid [$code]\n";
     $username_list = get_username_list($content);
 
     foreach ($username_list as $username => $nickname) {
-        echo "\t$username\t==> $nickname\n";
+        echo "\t$username";
         User::saveUser($username, $nickname);
     }
+    echo "\n";
     Question::setFetched($qid);
 }
 
