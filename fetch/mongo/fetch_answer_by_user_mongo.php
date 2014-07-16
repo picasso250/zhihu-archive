@@ -16,6 +16,7 @@ $count = User::getNotFetchedUserCount();
 echo "there are $count user to fetch\n";
 $n = 0;
 while ($username = User::getNotFetchedUserName($n)) {
+    User::updateByUserName($username, array('fetching' => 1));
     $n++;
     $url = "$base_url/people/$username/answers";
     echo "\nfetch No.$n $username\t";

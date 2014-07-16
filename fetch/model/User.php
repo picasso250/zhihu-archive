@@ -33,6 +33,7 @@ class User
         $c = $u->find($where)->count();
         return $c;
     }
+    
     public static function getNotFetchedUserName($i = 1)
     {
         if ($i == 0 && isset($argv[1])) {
@@ -41,6 +42,7 @@ class User
         $u = self::getTable();
         $where = array(
             'has_fetch' => array('$exists' => false),
+            'fetching' => array('$exists' => false),
             'name' => array('$exists' => true),
         );
         $c = $u->find($where)->fields(array('name' => true))->limit(1);
