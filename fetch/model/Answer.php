@@ -33,7 +33,7 @@ class Answer
                 echo "\tfail\n";
                 slog("$url [$code] error");
                 $success_ratio = get_average(0, 'success_ratio');
-                return false;
+                continue;
             } else {
                 $success_ratio = get_average(1, 'success_ratio');
             }
