@@ -143,11 +143,16 @@ function save_answer_to_db($base_url, $username, $answer_link_list) {
     }
 }
 
-function get_average($n)
+function get_average($n, $tag = 'default')
 {
-    static $cnt;
-    static $sum;
-    $cnt++;
-    $sum += $n;
-    return intval($sum/$cnt);
+    static $data;
+    if (empty($data)) {
+        $data = array();
+    }
+    if (!isset($data[$tag])) {
+        $data[$tag] = array('cnt' => 0, 'sum' => 0);
+    }
+    $data[$tag]['cnt']++;
+    $data[$tag]['sum'] += $n;
+    return $data[$tag]['sum']/$data[$tag]['cnt'];
 }

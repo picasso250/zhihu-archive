@@ -16,6 +16,8 @@ class Answer
     }
 
     public static function saveAnswer($base_url, $username, $answer_link_list) {
+        $success_ratio = 0;
+        $avg = 0;
         foreach ($answer_link_list as $url) {
             if (preg_match('%^/question/(\d+)/answer/(\d+)%', $url, $matches)) {
                 $qid = $matches[1];
@@ -32,11 +34,14 @@ class Answer
             if ($code != 200) { // fail fast
                 echo "\tfail\n";
                 slog("$url [$code] error");
+                $success_ratio = get_average(0, 'success_ratio');
                 return false;
+            } else {
+                $success_ratio = get_average(1, 'success_ratio');
             }
             $t = intval((microtime(true) - $t) * 1000);
-            $avg = get_average($t);
-            echo "\t$t ms\tAvg: $avg ms\n";
+            $avg = intval(get_average($t));
+            echo "\t$t ms\n";
             if (empty($content)) {
                 echo "content is empty\n";
                 slog("$url [$code] empty");
@@ -49,5 +54,7 @@ class Answer
 
             Answer::_saveAnswer($aid, $qid, $username, $content, $vote);
         }
+        $success_ratio = intval($success_ratio*100).'%';
+        echo "\tAvg: $avg ms\tsuccess_ratio: $success_ratio\n";
     }
 }
