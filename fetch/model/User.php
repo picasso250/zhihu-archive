@@ -23,6 +23,32 @@ class User
         return $rs;
     }
 
+    public static function getNotFetchedUserCount()
+    {
+        $u = self::getTable();
+        $where = array(
+            'has_fetch' => array('$exists' => false),
+            'name' => array('$exists' => true),
+        );
+        $c = $u->find($where)->count();
+        return $c;
+    }
+    public static function getNotFetchedUserName($i = 1)
+    {
+        if ($i == 0 && isset($argv[1])) {
+            return $argv[1];
+        }
+        $u = self::getTable();
+        $where = array(
+            'has_fetch' => array('$exists' => false),
+            'name' => array('$exists' => true),
+        );
+        $c = $u->find($where)->fields(array('name' => true))->limit(1);
+        foreach ($c as $v) {
+            return $v['name'];
+        }
+        return false;
+    }
     public static function updateByUserName($username, $args)
     {
         if (empty($args)) {

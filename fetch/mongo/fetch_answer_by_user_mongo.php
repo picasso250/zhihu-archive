@@ -12,16 +12,10 @@ use model\Answer;
 
 $base_url = 'http://www.zhihu.com';
 
-if (isset($argv[1]) && $argv[1]) {
-    $uids = array($argv[1]);
-} else {
-    $uids = User::getUids();
-}
-
-$count = count($uids);
+$count = User::getNotFetchedUserCount();
 echo "there are $count user to fetch\n";
 $n = 0;
-foreach ($uids as $username) {
+while ($username = User::getNotFetchedUserName($n)) {
     $n++;
     $url = "$base_url/people/$username/answers";
     echo "\nfetch No.$n $username\t";
