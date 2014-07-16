@@ -35,7 +35,8 @@ class Answer
                 return false;
             }
             $t = intval((microtime(true) - $t) * 1000);
-            echo "\t$t ms\n";
+            $avg = get_average($t);
+            echo "\t$t ms\tAvg: $avg ms\n";
             if (empty($content)) {
                 echo "content is empty\n";
                 slog("$url [$code] empty");

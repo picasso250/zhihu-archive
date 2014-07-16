@@ -142,3 +142,12 @@ function save_answer_to_db($base_url, $username, $answer_link_list) {
         }
     }
 }
+
+function get_average($n)
+{
+    static $cnt;
+    static $sum;
+    $cnt++;
+    $sum += $n;
+    return intval($sum/$cnt);
+}
