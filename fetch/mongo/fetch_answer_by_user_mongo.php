@@ -54,7 +54,7 @@ while ($username = User::getNotFetchedUserName($n)) {
     $num = get_page_num($content);
     if ($num > 1) {
         foreach (range(2, $num) as $i) {
-            echo "\nfetch page $i\t";
+            echo "\nNo. $n fetch page $i\t";
             $url_page = "$url?page=$i";
             timer();
             list($code, $content) = uget($url_page);
