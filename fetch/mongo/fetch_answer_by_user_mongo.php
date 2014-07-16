@@ -20,8 +20,10 @@ while ($username = User::getNotFetchedUserName($n)) {
     $n++;
     $url = "$base_url/people/$username/answers";
     echo "\nfetch No.$n $username\t";
+    timer();
     list($code, $content) = uget($url);
-    echo "[$code]\n";
+    $t = timer();
+    echo "[$code]\t$t ms\n";
     if ($code == 404) {
         slog("user $username fetch fail, code $code");
         User::updateByUserName($username, array('has_fetch' => true, 'fetch_fail' => true));
@@ -53,9 +55,11 @@ while ($username = User::getNotFetchedUserName($n)) {
         foreach (range(2, $num) as $i) {
             echo "\nfetch page $i\t";
             $url_page = "$url?page=$i";
+            timer();
             list($code, $content) = uget($url_page);
+            $t = timer();
             slog("$url_page [$code]");
-            echo "[$code]\n";
+            echo "[$code]\t$t ms\n";
             if ($code != 200) {
                 echo "奇奇怪怪的返回码 $code\n";
                 continue;

@@ -156,3 +156,20 @@ function get_average($n, $tag = 'default')
     $data[$tag]['sum'] += $n;
     return $data[$tag]['sum']/$data[$tag]['cnt'];
 }
+
+function timer($tag = 'default')
+{
+    static $data;
+    if (empty($data)) {
+        $data = array();
+    }
+    if (!isset($data[$tag])) {
+        $data[$tag] = microtime(true);
+        return 0;
+    } else {
+        $t = microtime(true);
+        $d = $t - $data[$tag];
+        $data[$tag] = $t;
+        return intval($d*1000);
+    }
+}

@@ -12,7 +12,7 @@ function odie_get($url, $opts = null) {
 
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 5); // wait
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10); // wait
     curl_setopt($ch, CURLOPT_DNS_CACHE_TIMEOUT, 1200); // cache dns 20 minutes
     $content = curl_exec($ch);
     if ($errno = curl_errno($ch)) {

@@ -34,7 +34,10 @@ function slog($msg)
 
 function uget($url, $opts = null)
 {
+    $t = -microtime(true);
     $rs = odie_get($url, $opts);
-    slog("$url [$rs[0]]");
+    $t += microtime(true);
+    $t = intval($t*1000);
+    slog("$url [$rs[0]]\t$t ms");
     return $rs;
 }
