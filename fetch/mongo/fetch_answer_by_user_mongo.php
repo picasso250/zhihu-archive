@@ -23,7 +23,8 @@ while ($username = User::getNotFetchedUserName($n)) {
     timer();
     list($code, $content) = uget($url);
     $t = timer();
-    echo "[$code]\t$t ms\n";
+    $avg = intval(get_average($t, 'user page'));
+    echo "[$code]\t$t ms\tAvg: $avg ms\n";
     if ($code == 404) {
         slog("user $username fetch fail, code $code");
         User::updateByUserName($username, array('has_fetch' => true, 'fetch_fail' => true));
@@ -58,8 +59,9 @@ while ($username = User::getNotFetchedUserName($n)) {
             timer();
             list($code, $content) = uget($url_page);
             $t = timer();
+            $avg = intval(get_average($t, 'user page'));
             slog("$url_page [$code]");
-            echo "[$code]\t$t ms\n";
+            echo "[$code]\t$t ms\tAvg: $avg ms\n";
             if ($code != 200) {
                 echo "奇奇怪怪的返回码 $code\n";
                 continue;
