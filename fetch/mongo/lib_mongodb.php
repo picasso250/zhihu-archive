@@ -20,7 +20,7 @@ function get_table($table)
             break;
 
         case 'question':
-            $t->ensureIndex(array('id' => -1));
+            $t->ensureIndex(array('id' => 1));
             break;
 
         case 'user':
