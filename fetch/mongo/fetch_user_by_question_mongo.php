@@ -17,15 +17,19 @@ echo "there are ",count($ids)," questions to fetch\n";
 
 foreach ($ids as $qid) {
     $url = "$base_url/question/$qid";
+    timer();
     list($code, $content) = odie_get($url);
-    echo "fetch $qid [$code]\n";
+    $t = timer();
+    echo "fetch $qid [$code] $t ms\n";
     $username_list = get_username_list($content);
 
+    timer();
     foreach ($username_list as $username => $nickname) {
         echo "\t$username";
         User::saveUser($username, $nickname);
     }
-    echo "\n";
+    $t = timer();
+    echo "\n\tSave: $t ms\n";
     Question::setFetched($qid);
 }
 
