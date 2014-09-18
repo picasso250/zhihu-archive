@@ -34,9 +34,10 @@ class User
         return $c;
     }
     
-    public static function getNotFetchedUserName($i = 1)
+    public static function getNotFetchedUserName($i = 1, $argv = null)
     {
         if ($i == 0 && isset($argv[1])) {
+            echo "you say $argv[1]\n";
             return $argv[1];
         }
         $u = self::getTable();
