@@ -36,7 +36,9 @@ function parse_answer_pure($content) {
     $dom = HTML5::loadHTML($content);
     $answerdom = $dom->getElementById('zh-question-answer-wrap');
     if (empty($answerdom)) {
+        slog('warinng: no #zh-question-answer-wrap');
         file_put_contents('last_error.html', $content);
+        throw new Exception("no #zh-question-answer-wrap", 1);
     }
     foreach ($answerdom->getElementsByTagName('div') as $div) {
         if ($class = $div->getAttribute('class')) {
