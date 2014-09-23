@@ -24,7 +24,7 @@ class User
             echo basename(__FILE__).':'.__LINE__.' '.$rs['err']."\n";
         }
         
-        return $rs;
+        return $rs['updatedExisting'];
     }
 
     public static function getNotFetchedUserCount()

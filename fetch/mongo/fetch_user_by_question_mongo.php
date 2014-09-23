@@ -15,22 +15,28 @@ $base_url = 'http://www.zhihu.com';
 $ids = Question::getIds();
 echo "there are ",count($ids)," questions to fetch\n";
 
+$sum = $existing_sum = 1;
 foreach ($ids as $qid) {
     $url = "$base_url/question/$qid";
     timer();
     list($code, $content) = odie_get($url);
+    slog($url." [$code]");
     $t = timer();
-    echo "fetch $qid [$code] $t ms\n";
+    echo "Fetch question $qid [$code] $t ms\n";
     $username_list = get_username_list($content);
 
     timer();
     foreach ($username_list as $username => $nickname) {
         echo "\t$username";
-        User::saveUser($username, $nickname);
+        if (User::saveUser($username, $nickname)) {
+            $existing_sum++;
+        }
+        $sum++;
     }
-    $t = timer();
-    echo "\n\tSave: $t ms\n";
     Question::setFetched($qid);
+    $rate = intval((1 - $existing_sum/$sum) * 100);
+    $t = timer();
+    echo "\tSave: $t ms\t rate $rate%\n";
 }
 
 
