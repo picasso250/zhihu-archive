@@ -36,7 +36,7 @@ foreach ($ids as $qid) {
     Question::setFetched($qid);
     $rate = intval((1 - $existing_sum/$sum) * 100);
     $t = timer();
-    echo "\tSave: $t ms\t rate $rate%\n";
+    echo "\tSave: $t ms\t Rate $rate%\n";
 }
 
 
