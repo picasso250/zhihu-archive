@@ -16,15 +16,6 @@ class AnswersParser(HTMLParser):
     def init(self):
         self.in_zh_pm_page_wrap = False
         self.in_zh_profile_answer_list = False
-        self.in_zh_question_answer_wrap = False
-        self.in_zh_question_title = False
-        self.in_zh_question_detail = False
-        self.in_count = False
-        self.in_title = False
-        self.in_detail = False
-        self.in_content = False
-        self.detail = ''
-        self.content = ''
         self.question_link_list = []
 
     def handle_starttag(self, tag, attrs):
@@ -49,11 +40,8 @@ class AnswersParser(HTMLParser):
                 self.question_link_list.append(attrs['href'])
                 return False
 
-
 class ZhihuParser(HTMLParser):
     def init(self):
-        self.in_zh_pm_page_wrap = False
-        self.in_zh_profile_answer_list = False
         self.in_zh_question_answer_wrap = False
         self.in_zh_question_title = False
         self.in_zh_question_detail = False
@@ -63,16 +51,15 @@ class ZhihuParser(HTMLParser):
         self.in_content = False
         self.detail = ''
         self.content = ''
-        self.question_link_list = []
         self.stack = []
 
     def handle_starttag(self, tag, attrs):
-        print("Encountered a start tag:", tag, attrs)
+        print("Start tag:", tag, attrs)
         attrs = dict(attrs)
 
         if 'id' in attrs and attrs['id'] == 'zh-question-answer-wrap':
             self.in_zh_question_answer_wrap = True
-        if self.in_zh_profile_answer_list and tag == 'div':
+        if self.in_zh_question_answer_wrap and tag == 'div':
             if 'class' in attrs and attrs['class'] == 'question_link':
                 class_list = attrs['class'].split(' ')
                 if 'zm-editable-content' in class_list:
@@ -80,32 +67,44 @@ class ZhihuParser(HTMLParser):
                     self.in_content = True
                     self.stack = []
                 return False
-        if self.in_zh_profile_answer_list and tag == 'span':
+        if self.in_zh_question_answer_wrap and tag == 'span':
             # print("Encountered a start tag:", tag, attrs)
             if 'class' in attrs and attrs['class'] == 'count':
                 self.in_count = True
 
+        if self.in_zh_question_title and tag == 'a':
+            print('#zh-question-title a')
+            self.in_title = True
         if 'id' in attrs and attrs['id'] == 'zh-question-title':
             self.in_zh_question_title = True
-        if self.in_zh_profile_answer_list and tag == 'a':
-            self.in_title = True
+            print('in_zh_question_title')
 
-        if 'id' in attrs and attrs['id'] == 'zh-question-detail':
-            self.in_zh_question_detail = True
-        if self.in_zh_profile_answer_list and tag == 'div':
+        if self.in_zh_question_detail and tag == 'div':
             print('#zh-question-detail div')
             self.in_detail = True
             self.stack = []
+        if 'id' in attrs and attrs['id'] == 'zh-question-detail':
+            self.in_zh_question_detail = True
+            print('#zh-question-detail')
 
         if self.in_detail or self.in_content:
             self.stack.append(tag)
 
     def handle_endtag(self, tag):
-        print("Encountered an end tag :", tag)
+        print("End tag :", tag)
         if self.in_detail or self.in_content:
-            pop_tag = self.stack.pop()
-            if pop_tag != tag:
-                raise Exception('pop '+pop_tag+', but end '+tag)
+            if len(self.stack) == 0:
+                self.in_detail = False
+                self.in_content = False
+            else:
+                while True:
+                    pop_tag = self.stack.pop()
+                    if pop_tag != tag:
+                        if tag in ['br', 'hr', 'img']:
+                            continue
+                        else:
+                            print(self.stack)
+                            raise Exception('pop '+pop_tag+', but end '+tag)
     def handle_data(self, data):
         if self.in_count:
             self.count = data
@@ -203,6 +202,8 @@ def _saveAnswer(aid, qid, username, content, vote):
     return insert_table('answer', args)
 
 def parse_answer_pure(content):
+    with open('last.html', 'w') as f:
+        f.write(content.decode())
     parser = ZhihuParser()
     parser.init()
     parser.feed(content.decode())
