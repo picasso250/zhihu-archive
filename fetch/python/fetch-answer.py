@@ -68,8 +68,8 @@ while True:
                 print( "奇奇怪怪的返回码 code\n")
                 continue
             content = response.read()
-            link_list = get_answer_link_list(content)
-            zhihu.saveAnswer(base_url, username, link_list)
+            link_list = zhihu.get_answer_link_list(content)
+            zhihu.saveAnswer(conn, username, link_list)
     
     zhihu.update_user_by_name(username, {'fetch': zhihu.FETCH_OK})
 
