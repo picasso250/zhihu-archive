@@ -6,14 +6,24 @@ require dirname(__DIR__)."/logic.php";
 require (__DIR__)."/lib_mongodb.php";
 require (__DIR__)."/autoload.php";
 
-$c = get_table('user');
-$c = $c->find()->count();
-echo "there are $c users\n";
 
-$c = get_table('question');
-$c = $c->find()->count();
-echo "there are $c questions\n";
+while (1) {
+    $c = get_table('user');
+    $user_count = $c->find()->count();
 
-$c = get_table('answer');
-$c = $c->find()->count();
-echo "there are $c answers\n";
+    $c = get_table('question');
+    $question_count = $c->find()->count();
+
+    $c = get_table('answer');
+    $answer_count = $c->find()->count();
+    if (isset($argv[1]) && $argv[1] === '-f') {
+        echo "\r";
+        echo "$user_count users\t$question_count questions\t$answer_count answers";
+        sleep(1);
+    } else {
+        echo "there are $user_count users\n";
+        echo "there are $question_count questions\n";
+        echo "there are $answer_count answers\n";
+        break;
+    }
+}

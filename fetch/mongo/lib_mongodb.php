@@ -18,6 +18,14 @@ function get_table($table)
         case 'answer':
             $t->ensureIndex(array('vote' => -1, 'q_id' => -1,));
             break;
+
+        case 'question':
+            $t->ensureIndex(array('id' => 1));
+            break;
+
+        case 'user':
+            $t->ensureIndex(array('name' => -1));
+            break;
         
         default:
             # code...

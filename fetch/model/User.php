@@ -16,11 +16,15 @@ class User
         $update = array('name' => $username, 'nick_name' => $nickname);
         $where = array('name' => $username);
         $rs = $u->update($where, array('$set' => $update), array('upsert' => true));
+        if ($rs['updatedExisting']) {
+            echo "\tupdatedExisting";
+        }
+        echo "\n";
         if (!$rs['ok']) {
             echo basename(__FILE__).':'.__LINE__.' '.$rs['err']."\n";
         }
         
-        return $rs;
+        return $rs['updatedExisting'];
     }
 
     public static function getNotFetchedUserCount()
@@ -34,9 +38,10 @@ class User
         return $c;
     }
     
-    public static function getNotFetchedUserName($i = 1)
+    public static function getNotFetchedUserName($i = 1, $argv = null)
     {
         if ($i == 0 && isset($argv[1])) {
+            echo "you say $argv[1]\n";
             return $argv[1];
         }
         $u = self::getTable();
