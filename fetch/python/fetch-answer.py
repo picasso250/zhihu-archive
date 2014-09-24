@@ -75,5 +75,7 @@ while True:
             zhihu.saveAnswer(conn, username, link_list)
     
     zhihu.update_user_by_name(username, {'fetch': zhihu.FETCH_OK})
+    if len(sys.argv) > 1:
+        break
 
 conn.close()
