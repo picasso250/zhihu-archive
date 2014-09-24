@@ -8,8 +8,12 @@ count = zhihu.getNotFetchedUserCount()
 print( "there are count user to fetch\n")
 n = 0
 while True:
-    username = zhihu.getNotFetchedUserName(n)
+    if len(sys.argc) > 1:
+        username = sys.argv[1]
+    else:
+        username = zhihu.getNotFetchedUserName(n)
     if username is None:
+        print('Complete!')
         break
     zhihu.update_user_by_name(username, {'fetch': zhihu.FETCH_ING})
     n += 1

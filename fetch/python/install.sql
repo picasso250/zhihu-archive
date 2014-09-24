@@ -2,7 +2,8 @@ CREATE TABLE `user` (
   `id` INTEGER PRIMARY KEY,
   `name` TEXT,
   `nick_name` TEXT,
-  `avator` TEXT
+  `avator` TEXT,
+  `fetch` INTEGER
 );
 CREATE UNIQUE INDEX idx_username ON user(name);
 
@@ -11,6 +12,7 @@ CREATE TABLE `question` (
   `title` TEXT,
   `description` TEXT,
   `create_time` INTEGER
+  `fetch` INTEGER
 );
 CREATE UNIQUE INDEX idx_title ON question(title);
 

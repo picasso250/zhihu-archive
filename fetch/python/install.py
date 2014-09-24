@@ -13,3 +13,4 @@ with open('install.sql') as f:
             print(sql_create)
             cursor = c.cursor()
             cursor.execute(sql_create)
+print('OK')

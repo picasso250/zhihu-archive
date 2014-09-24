@@ -1,5 +1,8 @@
 #coding: utf-8
 
+import sys
+import db
+
 # logic
 
 FETCH_ING = 1
@@ -22,8 +25,6 @@ def get_average(n, tag = 'default'):
     data[tag]['sum'] += n
     return data[tag]['sum']/data[tag]['cnt']
 
-def get_table(t):
-    pass
 def saveUser(username, nickname):
     u = get_table('user')
     update = {'name': username, 'nick_name': nickname}
@@ -34,17 +35,12 @@ def saveUser(username, nickname):
     return rs
 
 def getNotFetchedUserCount():
-    u = get_table('user')
-    where = {
-        'has_fetch': {'exists': False},
-        'name': {'exists': True},
-    }
-    c = u.find(where).count()
-    return c
+    cursor = db.connect().cursor()
+    cursor.execute('SELECT COUNT(*) FROM user WHERE fetch=0')
+    row = cursor.fetchone()
+    return row[0]
 
-def getNotFetchedUserName(i = 1):
-    if i == 0 and isset(argv[1]):
-        return argv[1]
+def getNotFetchedUserName():
     u = get_table('user')
     where = {
         'has_fetch': {'exists': false},
