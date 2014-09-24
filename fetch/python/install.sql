@@ -17,12 +17,11 @@ CREATE TABLE `question` (
   `create_time` INTEGER,
   `fetch` INTEGER
 );
-CREATE UNIQUE INDEX idx_title ON question(title);
 
 CREATE TABLE `answer` (
   `id` INTEGER PRIMARY KEY,
   `q_id` INTEGER,
-  `user_id` TEXT,
+  `user_id` INTEGER,
   `text` TEXT,
   `vote` INTEGER,
   `create_time` INTEGER,

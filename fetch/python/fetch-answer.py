@@ -13,6 +13,7 @@ n = 0
 while True:
     if len(sys.argv) > 1:
         username = sys.argv[1]
+        zhihu.insert_user({'name': username, 'fetch': zhihu.FETCH_ING})
     else:
         username = zhihu.getNotFetchedUserName()
     if username is None:
@@ -75,3 +76,4 @@ while True:
     
     zhihu.update_user_by_name(username, {'fetch': zhihu.FETCH_OK})
 
+conn.close()

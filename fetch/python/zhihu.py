@@ -161,14 +161,17 @@ def getNotFetchedUserName():
     return row[0]
 
 def update_table(table, args, where):
-    cursor = db.connect().cursor()
+    connect = db.connect()
+    cursor = connect.cursor()
     keys = args.keys()
     key_str = ','.join(['`{}`=?'.format(key) for key in keys])
     values = [str(e) for e in list(args.values())]
     where_str = ','.join(['`{}`=?'.format(key) for key in where.keys()])
     where_values = [str(e) for e in list(where.values())]
     values.append(*where_values)
-    return cursor.execute('UPDATE `{0}` SET {1} WHERE {2}'.format(table, key_str, where_str), tuple(values))
+    cursor.execute('UPDATE `{0}` SET {1} WHERE {2}'.format(table, key_str, where_str), tuple(values))
+    return connect.commit()
+
 
 def update_user_by_name(username, args):
     return update_table('user', args, {'name': username})
@@ -192,17 +195,34 @@ def get_answer_link_list(content):
     return parser.question_link_list
 
 def insert_table(table, args):
-    cursor = db.connect().cursor()
+    connect = db.connect()
+    cursor = connect.cursor()
     keys = args.keys()
     key_str = ','.join(['`{}`'.format(key) for key in keys])
     value_str = ','.join(['?' for key in keys])
     values = [str(e) for e in list(args.values())]
-    sql = 'INSERT INTO `{}` ({}) VALUES ({})'.format(table, key_str, value_str)
-    # print(sql)
-    return cursor.execute(sql, tuple(values))
+    sql_tpl = 'INSERT INTO `{}` ({}) VALUES ({})'
+    sql = sql_tpl.format(table, key_str, value_str)
+    print(sql_tpl.format(table, key_str, ','.join(["'{}'".format(e) for e in list(args.values())])))
+    cursor.execute(sql, tuple(values))
+    connect.commit()
+    return cursor.lastrowid
+
+def insert_user(args):
+    user_id = insert_table('user', args)
+    print('user_id', user_id)
+    return user_id
 
 def _saveAnswer(aid, qid, username, content, vote):
-    args = {'id': aid, 'q_id': qid, 'user_id': username, 'text': content, 'vote': vote, 'fetch_time': int(time.time())}
+    cursor = db.connect().cursor()
+    sql = 'SELECT id FROM user WHERE name=? LIMIT 1'
+    print(sql, username)
+    cursor.execute(sql, (username,))
+    row = cursor.fetchone()
+    if row is None:
+        raise Exception('no user {}'.format(username))
+    user_id = row[0]
+    args = {'id': aid, 'q_id': qid, 'user_id': user_id, 'text': content, 'vote': vote, 'fetch_time': int(time.time())}
     return insert_table('answer', args)
 
 def parse_answer_pure(content):
@@ -271,7 +291,7 @@ def setFetched(qid):
     return rs
 
 def saveQuestion(qid, question, description):
-    args = {'title': question, 'description': description, 'fetch_time': int(time.time())}
+    args = {'id': qid, 'title': question, 'description': description, 'fetch_time': int(time.time())}
     return insert_table('question', args)
 
 def getIds():
