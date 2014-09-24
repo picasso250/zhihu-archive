@@ -21,7 +21,7 @@ while True:
     zhihu.update_user_by_name(username, {'fetch': zhihu.FETCH_ING})
     n += 1
     url = "/people/{}/answers".format(username)
-    print("\nFetch", n, "username\t")
+    print("\n", n, url, "\t", end='')
     timer.timer()
     # print(url)
     conn.request("GET", url)
@@ -31,7 +31,7 @@ while True:
     if response is None:
         print('can not open', url)
     code = response.status
-    print( "[code]\tt ms\tAvg: avg ms\n")
+    print("[{}]\t{} ms\tAvg: {} ms\n".format(code, t, avg))
     if code == 404:
         zhihu.slog("user username fetch fail, code code")
         zhihu.update_user_by_name(username, {'fetch': zhihu.FETCH_FAIL})
@@ -49,7 +49,7 @@ while True:
     zhihu.update_user_by_name(username, {'avatar': src})
 
     link_list = zhihu.get_answer_link_list(content)
-    rs = zhihu.saveAnswer(base_url, username, link_list)
+    rs = zhihu.saveAnswer(conn, username, link_list)
 
     num = zhihu.get_page_num(content)
     if num > 1:

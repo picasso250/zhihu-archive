@@ -1,6 +1,6 @@
 #coding: utf-8
 
-import time
+import time, re
 import db
 import timer
 
@@ -12,7 +12,7 @@ FETCH_FAIL = 3
 
 from html.parser import HTMLParser
 
-class ZhihuParser(HTMLParser):
+class AnswersParser(HTMLParser):
     def init(self):
         self.in_zh_pm_page_wrap = False
         self.in_zh_profile_answer_list = False
@@ -22,12 +22,13 @@ class ZhihuParser(HTMLParser):
         self.in_count = False
         self.in_title = False
         self.in_detail = False
+        self.in_content = False
         self.detail = ''
         self.content = ''
         self.question_link_list = []
-        self.stack = []
 
     def handle_starttag(self, tag, attrs):
+        # print("Encountered a start tag:", tag, attrs)
         attrs = dict(attrs)
         # print(attrs)
         if 'id' in attrs and attrs['id'] == 'zh-pm-page-wrap':
@@ -48,10 +49,30 @@ class ZhihuParser(HTMLParser):
                 self.question_link_list.append(attrs['href'])
                 return False
 
+
+class ZhihuParser(HTMLParser):
+    def init(self):
+        self.in_zh_pm_page_wrap = False
+        self.in_zh_profile_answer_list = False
+        self.in_zh_question_answer_wrap = False
+        self.in_zh_question_title = False
+        self.in_zh_question_detail = False
+        self.in_count = False
+        self.in_title = False
+        self.in_detail = False
+        self.in_content = False
+        self.detail = ''
+        self.content = ''
+        self.question_link_list = []
+        self.stack = []
+
+    def handle_starttag(self, tag, attrs):
+        print("Encountered a start tag:", tag, attrs)
+        attrs = dict(attrs)
+
         if 'id' in attrs and attrs['id'] == 'zh-question-answer-wrap':
             self.in_zh_question_answer_wrap = True
         if self.in_zh_profile_answer_list and tag == 'div':
-            # print("Encountered a start tag:", tag, attrs)
             if 'class' in attrs and attrs['class'] == 'question_link':
                 class_list = attrs['class'].split(' ')
                 if 'zm-editable-content' in class_list:
@@ -72,6 +93,7 @@ class ZhihuParser(HTMLParser):
         if 'id' in attrs and attrs['id'] == 'zh-question-detail':
             self.in_zh_question_detail = True
         if self.in_zh_profile_answer_list and tag == 'div':
+            print('#zh-question-detail div')
             self.in_detail = True
             self.stack = []
 
@@ -79,10 +101,11 @@ class ZhihuParser(HTMLParser):
             self.stack.append(tag)
 
     def handle_endtag(self, tag):
-        # print("Encountered an end tag :", tag)
-        pop_tag = self.stack.pop()
-        if pop_tag != tag:
-            raise Exception('pop '+pop_tag+', but end '+tag)
+        print("Encountered an end tag :", tag)
+        if self.in_detail or self.in_content:
+            pop_tag = self.stack.pop()
+            if pop_tag != tag:
+                raise Exception('pop '+pop_tag+', but end '+tag)
     def handle_data(self, data):
         if self.in_count:
             self.count = data
@@ -100,7 +123,7 @@ def slog(msg):
     pass
 
 def get_avatar_src(content):
-    parser = ZhihuParser()
+    parser = AnswersParser()
     parser.init()
     parser.feed(content.decode())
     return parser.avatar
@@ -162,7 +185,7 @@ def getUids():
     return ret
 
 def get_answer_link_list(content):
-    parser = ZhihuParser()
+    parser = AnswersParser()
     parser.init()
     parser.feed(content.decode())
     return parser.question_link_list
@@ -185,9 +208,9 @@ def parse_answer_pure(content):
     parser.feed(content.decode())
     return parser.title, parser.detail, parser.content, parser.count
 
-def saveAnswer(base_url, username, answer_link_list):
+def saveAnswer(conn, username, answer_link_list):
     regex = re.compile(r'^/question/(\d+)/answer/(\d+)')
-    conn = http.client.HTTPConnection('www.zhihu.com')
+    # conn = http.client.HTTPConnection('www.zhihu.com')
 
     success_ratio = None
     avg = None
