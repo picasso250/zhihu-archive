@@ -8,6 +8,9 @@ FETCH_ING = 1
 FETCH_OK = 2
 FETCH_FAIL = 3
 
+def slog(msg):
+    pass
+
 def get_avatar_src(content):
     dom = loadHTML(content)
     dom = dom.getElementById('zh-pm-page-wrap')
