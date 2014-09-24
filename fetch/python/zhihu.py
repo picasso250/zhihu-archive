@@ -323,7 +323,18 @@ def set_question_fetch(qid, fetch):
     where = {'id': qid}
     return update_table('question', sets, where)
 
+def get_question_by_id(qid):
+    cursor = db.connect().cursor()
+    sql = 'SELECT id FROM question WHERE id=? LIMIT 1'
+    # print(sql, username)
+    cursor.execute(sql, (qid,))
+    row = cursor.fetchone()
+    if row is None:
+        return None
+    return row[0]
+
 def saveQuestion(qid, question, description):
+    question_id = get_question_by_id(qid)
     args = {
         'id': qid,
         'title': question,
@@ -331,7 +342,10 @@ def saveQuestion(qid, question, description):
         'fetch_time': int(time.time()),
         'fetch': 0
     }
-    return insert_table('question', args)
+    if question_id is None:
+        return insert_table('question', args)
+    else:
+        return update_table('question', args, {'id': qid})
 
 def next_question_id():
     cursor = db.connect().cursor()
@@ -345,7 +359,7 @@ def next_question_id():
 
 def get_page_num(content):
     matches = re.findall(r'<a href="\?page=(\d+)', content.decode())
-    if matches is None:
+    if matches is None or len(matches) == 0:
         return 1
     # print(matches)
     return max([int(i) for i in matches])
