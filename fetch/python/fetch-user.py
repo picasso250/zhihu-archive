@@ -1,33 +1,30 @@
 #coding: utf-8
 
-require dirname(dirname(__DIR__))."/vendor/autoload.php";
-require dirname(__DIR__)."/odie.php";
-require dirname(__DIR__)."/logic.php";
-require (__DIR__)."/lib_mongodb.php";
-require (__DIR__)."/autoload.php";
+import http.client
+import zhihu
 
-use model\User;
-use model\Question;
-use model\Answer;
+conn = http.client.HTTPConnection('www.zhihu.com')
 
-$base_url = 'http://www.zhihu.com';
+# print("there are ",count(ids)," questions to fetch\n")
 
-$ids = Question::getIds();
-echo "there are ",count($ids)," questions to fetch\n";
+while True:
+    qid = zhihu.next_question_id()
+    if qid is None:
+        break
+    url = "/question/{}".format(qid)
+    conn.request("GET", url)
+    response = conn.getresponse()
+    if response is None:
+        print('can not open', url)
+    code = response.status
+    print("{} [{}]".format(url, code))
+    content = response.read()
+    username_list = zhihu.get_username_list(content)
 
-foreach ($ids as $qid) {
-    $url = "$base_url/question/$qid";
-    list($code, $content) = odie_get($url);
-    echo "fetch $qid [$code]\n";
-    $username_list = get_username_list($content);
+    for username, nickname in username_list:
+        print("\t{}".format(username))
+        zhihu.saveUser(username, nickname)
+    print("\n")
+    zhihu.setFetched(qid)
 
-    foreach ($username_list as $username => $nickname) {
-        echo "\t$username";
-        User::saveUser($username, $nickname);
-    }
-    echo "\n";
-    Question::setFetched($qid);
-}
-
-
-#coding: utf-8
+conn.close()

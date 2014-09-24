@@ -216,13 +216,20 @@ def insert_user(args):
 def _saveAnswer(aid, qid, username, content, vote):
     cursor = db.connect().cursor()
     sql = 'SELECT id FROM user WHERE name=? LIMIT 1'
-    print(sql, username)
+    # print(sql, username)
     cursor.execute(sql, (username,))
     row = cursor.fetchone()
     if row is None:
         raise Exception('no user {}'.format(username))
     user_id = row[0]
-    args = {'id': aid, 'q_id': qid, 'user_id': user_id, 'text': content, 'vote': vote, 'fetch_time': int(time.time())}
+    args = {
+        'id': aid,
+        'q_id': qid,
+        'user_id': user_id,
+        'text': content,
+        'vote': vote,
+        'fetch_time': int(time.time())
+    }
     return insert_table('answer', args)
 
 def parse_answer_pure(content):
@@ -280,30 +287,29 @@ def saveAnswer(conn, username, answer_link_list):
         print("\tAvg: {} ms\tsuccess_ratio: {}%\n".format(avg, success_ratio))
 
 def setFetched(qid):
-    raise Exception('setFetched')
-    # q = self::getTable()
-    # update = array('has_fetch': true)
-    # where = array('id': qid)
-    # rs = q->update(where, array('set': update))
-    # if (!rs['ok']) {
-    #     echo basename(__FILE__).':'.__LINE__.' '.rs['err']."\n"
-    # }
-    return rs
+    sets = {'fetch': FETCH_OK}
+    where = {'id': qid}
+    return update_table('question', sets, where)
 
 def saveQuestion(qid, question, description):
-    args = {'id': qid, 'title': question, 'description': description, 'fetch_time': int(time.time())}
+    args = {
+        'id': qid,
+        'title': question,
+        'description': description,
+        'fetch_time': int(time.time()),
+        'fetch': 0
+    }
     return insert_table('question', args)
 
-def getIds():
-    raise Exception('getIds')
-    # c = self::getTable()
-    # where = array('has_fetch': array('exists': false))
-    # c = c->find(where)->fields(array('id': true))
-    # ret = array()
-    # foreach (c as v) {
-    #     ret[] = v['id']
-    # }
-    return ret
+def next_question_id():
+    cursor = db.connect().cursor()
+    sql = 'SELECT id FROM `question` WHERE fetch=0 LIMIT 1'
+    print(sql)
+    cursor.execute(sql)
+    row = cursor.fetchone()
+    if row is None:
+        return None
+    return row[0]
 
 def get_page_num(content):
     matches = re.findall(r'<a href="\?page=(\d+)', content.decode())
@@ -311,3 +317,11 @@ def get_page_num(content):
         return 1
     # print(matches)
     return max([int(i) for i in matches])
+
+regex = re.compile(r'<a href="/people/([^"]+).+>([^<]+)</', re.S)
+def get_username_list(content):
+    matches = regex.findall(content.decode())
+    if matches is None:
+        raise Exception('no user')
+    print(matches)
+    return matches
