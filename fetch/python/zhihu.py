@@ -17,9 +17,15 @@ class ZhihuParser(HTMLParser):
         self.in_zh_pm_page_wrap = False
         self.in_zh_profile_answer_list = False
         self.in_zh_question_answer_wrap = False
-        self.in_title = False
+        self.in_zh_question_title = False
+        self.in_zh_question_detail = False
         self.in_count = False
+        self.in_title = False
+        self.in_detail = False
+        self.detail = ''
+        self.content = ''
         self.question_link_list = []
+        self.stack = []
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
@@ -46,10 +52,12 @@ class ZhihuParser(HTMLParser):
             self.in_zh_question_answer_wrap = True
         if self.in_zh_profile_answer_list and tag == 'div':
             # print("Encountered a start tag:", tag, attrs)
-            if 'class' in attrs and  == 'question_link':
+            if 'class' in attrs and attrs['class'] == 'question_link':
                 class_list = attrs['class'].split(' ')
                 if 'zm-editable-content' in class_list:
                     print('we find div.zm-editable-content')
+                    self.in_content = True
+                    self.stack = []
                 return False
         if self.in_zh_profile_answer_list and tag == 'span':
             # print("Encountered a start tag:", tag, attrs)
@@ -57,18 +65,24 @@ class ZhihuParser(HTMLParser):
                 self.in_count = True
 
         if 'id' in attrs and attrs['id'] == 'zh-question-title':
-            self.in_zh_profile_answer_list = True
+            self.in_zh_question_title = True
         if self.in_zh_profile_answer_list and tag == 'a':
             self.in_title = True
 
         if 'id' in attrs and attrs['id'] == 'zh-question-detail':
-            self.in_zh_profile_answer_list = True
-        if self.in_zh_profile_answer_list and tag == 'a':
-            self.in_title = True
+            self.in_zh_question_detail = True
+        if self.in_zh_profile_answer_list and tag == 'div':
+            self.in_detail = True
+            self.stack = []
+
+        if self.in_detail or self.in_content:
+            self.stack.append(tag)
 
     def handle_endtag(self, tag):
         # print("Encountered an end tag :", tag)
-        pass
+        pop_tag = self.stack.pop()
+        if pop_tag != tag:
+            raise Exception('pop '+pop_tag+', but end '+tag)
     def handle_data(self, data):
         if self.in_count:
             self.count = data
@@ -76,6 +90,10 @@ class ZhihuParser(HTMLParser):
         if self.in_title:
             self.title = data
             return False
+        if self.in_detail:
+            self.detail += data
+        if self.in_content:
+            self.content += data
 
 
 def slog(msg):
@@ -111,16 +129,12 @@ def getNotFetchedUserCount():
     return row[0]
 
 def getNotFetchedUserName():
-    u = get_table('user')
-    where = {
-        'has_fetch': {'exists': false},
-        'fetching': {'exists': false},
-        'name': {'exists': true},
-    }
-    c = u.find(where).fields({'name': true}).limit(1)
-    for v in c:
-        return v['name']
-    return false
+    cursor = db.connect().cursor()
+    cursor.execute('SELECT `name` FROM `user` WHERE `fetch`=0 LIMIT 1')
+    row = cursor.fetchone()
+    if row is None:
+        return None
+    return row[0]
 
 def update_table(table, args, where):
     cursor = db.connect().cursor()
@@ -165,37 +179,11 @@ def _saveAnswer(aid, qid, username, content, vote):
     args = {'id': aid, 'q_id': qid, 'user_id': username, 'text': content, 'vote': vote, 'fetch_time': int(time.time())}
     return insert_table('answer', args)
 
-def parse_answer_pure(content) {
-    dom = zhihu.loadHTML(content)
-    answerdom = dom->getElementById('zh-question-answer-wrap')
-    if (empty(answerdom)) {
-        slog('warinng: no #zh-question-answer-wrap')
-        file_put_contents('last_error.html', content)
-        throw new Exception("no #zh-question-answer-wrap", 1)
-    }
-    foreach (answerdom->getElementsByTagName('div') as div) {
-        if (class = div->getAttribute('class')) {
-            class = explode(' ', class)
-            if (in_array('zm-editable-content', class)) {
-                answer= div->C14N()
-            }
-        }
-    }
-    foreach (answerdom->getElementsByTagName('span') as span) {
-        if (class = span->getAttribute('class') == 'count') {
-            vote = intval(span->textContent)
-        }
-    }
-    
-    q = dom->getElementById('zh-question-title')
-    a = q->getElementsByTagName('a')->item(0)
-    question = a->textContent
-    
-    descript = dom->getElementById('zh-question-detail')
-    descript = descript->getElementsByTagName('div')->item(0)->C14N()
-    
-    return array(question, descript, answer, vote)
-}
+def parse_answer_pure(content):
+    parser = ZhihuParser()
+    parser.init()
+    parser.feed(content.decode())
+    return parser.title, parser.detail, parser.content, parser.count
 
 def saveAnswer(base_url, username, answer_link_list):
     regex = re.compile(r'^/question/(\d+)/answer/(\d+)')
@@ -222,9 +210,8 @@ def saveAnswer(base_url, username, answer_link_list):
             slog("url [code] error")
             success_ratio = get_average(0, 'success_ratio')
             continue
-        } else {
+        else:
             success_ratio = get_average(1, 'success_ratio')
-        }
         content = response.read()
         t = timer.timer('saveAnswer')
         avg = int(get_average(t))
