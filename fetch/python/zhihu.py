@@ -1,6 +1,7 @@
 #coding: utf-8
 
 import time, re, sys
+import sqlite3
 import db
 import timer
 
@@ -39,6 +40,29 @@ class AnswersParser(HTMLParser):
             if 'class' in attrs and attrs['class'] == 'question_link':
                 self.question_link_list.append(attrs['href'])
                 return False
+
+
+class QuestionParser(HTMLParser):
+    def init(self):
+        self.regex = re.compile('/people/(.+)$')
+        self.link = None
+        self.users = {}
+
+    def handle_starttag(self, tag, attrs):
+        # print("Encountered a start tag:", tag, attrs)
+        attrs = dict(attrs)
+        if tag == 'a' and 'href' in attrs:
+            matches = self.regex.search(attrs['href'])
+            if matches is not None:
+                self.link = matches.group(1)
+            else:
+                pass # do nothing
+
+    def handle_data(self, data):
+        if self.link is not None:
+            self.users[self.link] = data
+            self.link = None
+            return False
 
 class ZhihuParser(HTMLParser):
     def init(self):
@@ -137,14 +161,24 @@ def get_average(n, tag = 'default'):
     data[tag]['sum'] += n
     return data[tag]['sum']/data[tag]['cnt']
 
+def get_user_id_by_name(username):
+    cursor = db.connect().cursor()
+    sql = 'SELECT id FROM user WHERE name=? LIMIT 1'
+    # print(sql, username)
+    cursor.execute(sql, (username,))
+    row = cursor.fetchone()
+    if row is None:
+        return None
+    user_id = row[0]
+    return user_id
+
 def saveUser(username, nickname):
-    u = get_table('user')
+    user_id = get_user_id_by_name(username)
     update = {'name': username, 'nick_name': nickname}
-    where = {'name': username}
-    rs = u.update(where, {'set': update}, {'upsert': true})
-    if (not rs['ok']):
-        print(rs['err'])
-    return rs
+    if user_id is None:
+        return insert_table('user', update)
+    else:
+        return update_table('user', update, {'name': username})
 
 def getNotFetchedUserCount():
     cursor = db.connect().cursor()
@@ -169,7 +203,9 @@ def update_table(table, args, where):
     where_str = ','.join(['`{}`=?'.format(key) for key in where.keys()])
     where_values = [str(e) for e in list(where.values())]
     values.append(*where_values)
-    cursor.execute('UPDATE `{0}` SET {1} WHERE {2}'.format(table, key_str, where_str), tuple(values))
+    sql = 'UPDATE `{0}` SET {1} WHERE {2}'.format(table, key_str, where_str)
+    # print(sql)
+    cursor.execute(sql, tuple(values))
     return connect.commit()
 
 
@@ -203,7 +239,7 @@ def insert_table(table, args):
     values = [str(e) for e in list(args.values())]
     sql_tpl = 'INSERT INTO `{}` ({}) VALUES ({})'
     sql = sql_tpl.format(table, key_str, value_str)
-    print(sql_tpl.format(table, key_str, ','.join(["'{}'".format(e) for e in list(args.values())])))
+    # print(sql_tpl.format(table, key_str, ','.join(["'{}'".format(e) for e in list(args.values())])))
     cursor.execute(sql, tuple(values))
     connect.commit()
     return cursor.lastrowid
@@ -213,15 +249,11 @@ def insert_user(args):
     print('user_id', user_id)
     return user_id
 
+
 def _saveAnswer(aid, qid, username, content, vote):
-    cursor = db.connect().cursor()
-    sql = 'SELECT id FROM user WHERE name=? LIMIT 1'
-    # print(sql, username)
-    cursor.execute(sql, (username,))
-    row = cursor.fetchone()
-    if row is None:
+    user_id = get_user_id_by_name(username)
+    if user_id is None:
         raise Exception('no user {}'.format(username))
-    user_id = row[0]
     args = {
         'id': aid,
         'q_id': qid,
@@ -286,8 +318,8 @@ def saveAnswer(conn, username, answer_link_list):
         success_ratio = int(success_ratio*100)
         print("\tAvg: {} ms\tsuccess_ratio: {}%\n".format(avg, success_ratio))
 
-def setFetched(qid):
-    sets = {'fetch': FETCH_OK}
+def set_question_fetch(qid, fetch):
+    sets = {'fetch': fetch}
     where = {'id': qid}
     return update_table('question', sets, where)
 
@@ -304,7 +336,7 @@ def saveQuestion(qid, question, description):
 def next_question_id():
     cursor = db.connect().cursor()
     sql = 'SELECT id FROM `question` WHERE fetch=0 LIMIT 1'
-    print(sql)
+    # print(sql)
     cursor.execute(sql)
     row = cursor.fetchone()
     if row is None:
@@ -318,10 +350,10 @@ def get_page_num(content):
     # print(matches)
     return max([int(i) for i in matches])
 
-regex = re.compile(r'<a href="/people/([^"]+).+>([^<]+)</', re.S)
 def get_username_list(content):
-    matches = regex.findall(content.decode())
-    if matches is None:
-        raise Exception('no user')
-    print(matches)
-    return matches
+    with open('last_question.html', 'w') as f:
+        f.write(content.decode())
+    parser = QuestionParser()
+    parser.init()
+    parser.feed(content.decode())
+    return parser.users

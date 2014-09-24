@@ -7,10 +7,13 @@ conn = http.client.HTTPConnection('www.zhihu.com')
 
 # print("there are ",count(ids)," questions to fetch\n")
 
+count = 0
+insert_count = 0
 while True:
     qid = zhihu.next_question_id()
     if qid is None:
         break
+    zhihu.set_question_fetch(qid, zhihu.FETCH_ING)
     url = "/question/{}".format(qid)
     conn.request("GET", url)
     response = conn.getresponse()
@@ -21,10 +24,16 @@ while True:
     content = response.read()
     username_list = zhihu.get_username_list(content)
 
-    for username, nickname in username_list:
-        print("\t{}".format(username))
-        zhihu.saveUser(username, nickname)
-    print("\n")
-    zhihu.setFetched(qid)
+    for username, nickname in username_list.items():
+        print("\t{}".format(username), end='')
+        rs = zhihu.saveUser(username, nickname)
+        if rs is not None:
+            insert_count += 1
+            print('\t+')
+        else:
+            print()
+        count += 1
+    print("\tRate {}%\n".format(int(insert_count/count * 100)))
+    zhihu.set_question_fetch(qid, zhihu.FETCH_OK)
 
 conn.close()
