@@ -57,9 +57,7 @@ class ZhihuParser(HTMLParser):
         print("Start tag:", tag, attrs)
         attrs = dict(attrs)
 
-        if 'id' in attrs and attrs['id'] == 'zh-question-answer-wrap':
-            self.in_zh_question_answer_wrap = True
-        if self.in_zh_question_answer_wrap and tag == 'div':
+        if self.in_zh_question_answer_wrap and not self.in_content and tag == 'div':
             if 'class' in attrs and attrs['class'] == 'question_link':
                 class_list = attrs['class'].split(' ')
                 if 'zm-editable-content' in class_list:
@@ -67,6 +65,8 @@ class ZhihuParser(HTMLParser):
                     self.in_content = True
                     self.stack = []
                 return False
+        if 'id' in attrs and attrs['id'] == 'zh-question-answer-wrap':
+            self.in_zh_question_answer_wrap = True
         if self.in_zh_question_answer_wrap and tag == 'span':
             # print("Encountered a start tag:", tag, attrs)
             if 'class' in attrs and attrs['class'] == 'count':
@@ -79,7 +79,7 @@ class ZhihuParser(HTMLParser):
             self.in_zh_question_title = True
             print('in_zh_question_title')
 
-        if self.in_zh_question_detail and tag == 'div':
+        if self.in_zh_question_detail and not self.in_detail and tag == 'div':
             print('#zh-question-detail div')
             self.in_detail = True
             self.stack = []
@@ -89,6 +89,7 @@ class ZhihuParser(HTMLParser):
 
         if self.in_detail or self.in_content:
             self.stack.append(tag)
+            print('stack',self.stack)
 
     def handle_endtag(self, tag):
         print("End tag :", tag)
@@ -100,11 +101,12 @@ class ZhihuParser(HTMLParser):
                 while True:
                     pop_tag = self.stack.pop()
                     if pop_tag != tag:
-                        if tag in ['br', 'hr', 'img']:
+                        if pop_tag in ['br', 'hr', 'img']:
                             continue
                         else:
                             print(self.stack)
                             raise Exception('pop '+pop_tag+', but end '+tag)
+                    break
     def handle_data(self, data):
         if self.in_count:
             self.count = data
@@ -195,7 +197,9 @@ def insert_table(table, args):
     key_str = ','.join(['`{}`'.format(key) for key in keys])
     value_str = ','.join(['?' for key in keys])
     values = [str(e) for e in list(args.values())]
-    return cursor.execute('INSERT INTO `{0}` ({}) VALUES {}'.format(table, key_str, values), tuple(values))
+    sql = 'INSERT INTO `{}` ({}) VALUES ({})'.format(table, key_str, value_str)
+    print(sql)
+    return cursor.execute(sql, tuple(values))
 
 def _saveAnswer(aid, qid, username, content, vote):
     args = {'id': aid, 'q_id': qid, 'user_id': username, 'text': content, 'vote': vote, 'fetch_time': int(time.time())}
@@ -247,9 +251,35 @@ def saveAnswer(conn, username, answer_link_list):
         question, descript, content, vote = parse_answer_pure(content)
         slog("url [code] ^vote\tquestion")
 
-        zhihu.saveQuestion(qid, question, descript)
+        saveQuestion(qid, question, descript)
 
-        zhihu._saveAnswer(aid, qid, username, content, vote)
+        _saveAnswer(aid, qid, username, content, vote)
     if success_ratio is not None and avg is not None:
         success_ratio = int(success_ratio*100)
         print("\tAvg: {} ms\tsuccess_ratio: {}%\n".format(avg, success_ratio))
+
+def setFetched(qid):
+    raise Exception('setFetched')
+    # q = self::getTable()
+    # update = array('has_fetch': true)
+    # where = array('id': qid)
+    # rs = q->update(where, array('set': update))
+    # if (!rs['ok']) {
+    #     echo basename(__FILE__).':'.__LINE__.' '.rs['err']."\n"
+    # }
+    return rs
+
+def saveQuestion(qid, question, description):
+    args = {'title': question, 'description': description, 'fetch_time': int(time.time())}
+    return insert_table('question', args)
+
+def getIds():
+    raise Exception('getIds')
+    # c = self::getTable()
+    # where = array('has_fetch': array('exists': false))
+    # c = c->find(where)->fields(array('id': true))
+    # ret = array()
+    # foreach (c as v) {
+    #     ret[] = v['id']
+    # }
+    return ret

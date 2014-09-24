@@ -24,6 +24,7 @@ CREATE TABLE `answer` (
   `q_id` INTEGER,
   `user_id` TEXT,
   `text` TEXT,
+  `vote` INTEGER,
   `create_time` INTEGER,
   `fetch_time` INTEGER
 );
