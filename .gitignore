@@ -3,3 +3,4 @@
 /fetch/cache
 fetch/mongo/fetch.log
 *.log
+__pycache__
