@@ -8,16 +8,36 @@ FETCH_ING = 1
 FETCH_OK = 2
 FETCH_FAIL = 3
 
+from html.parser import HTMLParser
+
+class ZhihuParser(HTMLParser):
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        # print(attrs)
+        if 'id' in attrs and attrs['id'] == 'zh-pm-page-wrap':
+            print('find #zh-pm-page-wrap')
+            self.in_zh_pm_page_wrap = True
+        if self.in_zh_pm_page_wrap and tag == 'img':
+            # print("Encountered a start tag:", tag, attrs)
+            if 'class' in attrs and attrs['class'] == 'zm-profile-header-img zg-avatar-big zm-avatar-editor-preview':
+                print('find img.')
+                self.avatar = attrs['src']
+                return False
+    def handle_endtag(self, tag):
+        # print("Encountered an end tag :", tag)
+        pass
+    def handle_data(self, data):
+        pass
+
+
 def slog(msg):
     pass
 
 def get_avatar_src(content):
-    dom = loadHTML(content)
-    dom = dom.getElementById('zh-pm-page-wrap')
-    for node in dom.getElementsByTagName('img'):
-        attr = node.getAttribute('class')
-        if attr == 'zm-profile-header-img zg-avatar-big zm-avatar-editor-preview':
-            src = (node.getAttribute('src'))
+    parser = ZhihuParser()
+    parser.in_zh_pm_page_wrap = False
+    parser.feed(content.decode())
+    return parser.avatar
 
 data = {}
 def get_average(n, tag = 'default'):
