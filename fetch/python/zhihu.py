@@ -54,7 +54,7 @@ class ZhihuParser(HTMLParser):
         self.stack = []
 
     def handle_starttag(self, tag, attrs):
-        print("Start tag:", tag, attrs)
+        # print("Start tag:", tag, attrs)
         attrs = dict(attrs)
 
         if self.in_zh_question_answer_wrap and not self.in_content and tag == 'div':
@@ -73,7 +73,7 @@ class ZhihuParser(HTMLParser):
                 self.in_count = True
 
         if self.in_zh_question_title and tag == 'a':
-            print('#zh-question-title a')
+            # print('#zh-question-title a')
             self.in_title = True
         if 'id' in attrs and attrs['id'] == 'zh-question-title':
             self.in_zh_question_title = True
@@ -89,10 +89,10 @@ class ZhihuParser(HTMLParser):
 
         if self.in_detail or self.in_content:
             self.stack.append(tag)
-            print('stack',self.stack)
+            # print('stack',self.stack)
 
     def handle_endtag(self, tag):
-        print("End tag :", tag)
+        # print("End tag :", tag)
         if self.in_detail or self.in_content:
             if len(self.stack) == 0:
                 self.in_detail = False
@@ -283,3 +283,10 @@ def getIds():
     #     ret[] = v['id']
     # }
     return ret
+
+def get_page_num(content):
+    matches = re.findall(r'<a href="\?page=(\d+)', content.decode())
+    if matches is None:
+        return 1
+    print(matches)
+    return max([int(i) for i in matches])
