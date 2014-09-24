@@ -1,6 +1,8 @@
 #coding: utf-8
 
+import time
 import db
+import timer
 
 # logic
 
@@ -14,13 +16,16 @@ class ZhihuParser(HTMLParser):
     def init(self):
         self.in_zh_pm_page_wrap = False
         self.in_zh_profile_answer_list = False
+        self.in_zh_question_answer_wrap = False
+        self.in_title = False
+        self.in_count = False
         self.question_link_list = []
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
         # print(attrs)
         if 'id' in attrs and attrs['id'] == 'zh-pm-page-wrap':
-            print('find #zh-pm-page-wrap')
+            # print('find #zh-pm-page-wrap')
             self.in_zh_pm_page_wrap = True
         if self.in_zh_pm_page_wrap and tag == 'img':
             # print("Encountered a start tag:", tag, attrs)
@@ -37,11 +42,40 @@ class ZhihuParser(HTMLParser):
                 self.question_link_list.append(attrs['href'])
                 return False
 
+        if 'id' in attrs and attrs['id'] == 'zh-question-answer-wrap':
+            self.in_zh_question_answer_wrap = True
+        if self.in_zh_profile_answer_list and tag == 'div':
+            # print("Encountered a start tag:", tag, attrs)
+            if 'class' in attrs and  == 'question_link':
+                class_list = attrs['class'].split(' ')
+                if 'zm-editable-content' in class_list:
+                    print('we find div.zm-editable-content')
+                return False
+        if self.in_zh_profile_answer_list and tag == 'span':
+            # print("Encountered a start tag:", tag, attrs)
+            if 'class' in attrs and attrs['class'] == 'count':
+                self.in_count = True
+
+        if 'id' in attrs and attrs['id'] == 'zh-question-title':
+            self.in_zh_profile_answer_list = True
+        if self.in_zh_profile_answer_list and tag == 'a':
+            self.in_title = True
+
+        if 'id' in attrs and attrs['id'] == 'zh-question-detail':
+            self.in_zh_profile_answer_list = True
+        if self.in_zh_profile_answer_list and tag == 'a':
+            self.in_title = True
+
     def handle_endtag(self, tag):
         # print("Encountered an end tag :", tag)
         pass
     def handle_data(self, data):
-        pass
+        if self.in_count:
+            self.count = data
+            return False
+        if self.in_title:
+            self.title = data
+            return False
 
 
 def slog(msg):
@@ -88,13 +122,18 @@ def getNotFetchedUserName():
         return v['name']
     return false
 
-def update_user_by_name(username, args):
+def update_table(table, args, where):
     cursor = db.connect().cursor()
     keys = args.keys()
-    key_str = ','.join([key+'=?' for key in keys])
+    key_str = ','.join(['`{}`=?'.format(key) for key in keys])
     values = [str(e) for e in list(args.values())]
-    values.append(username)
-    return cursor.execute('UPDATE user set '+key_str+' where name=?', tuple(values))
+    where_str = ','.join(['`{}`=?'.format(key) for key in where.keys()])
+    where_values = [str(e) for e in list(where.values())]
+    values.append(*where_values)
+    return cursor.execute('UPDATE `{0}` SET {1} WHERE {2}'.format(table, key_str, where_str), tuple(values))
+
+def update_user_by_name(username, args):
+    return update_table('user', args, {'name': username})
 
 def getUids():
     u = get_table('user')
@@ -113,3 +152,93 @@ def get_answer_link_list(content):
     parser.init()
     parser.feed(content.decode())
     return parser.question_link_list
+
+def insert_table(table, args):
+    cursor = db.connect().cursor()
+    keys = args.keys()
+    key_str = ','.join(['`{}`'.format(key) for key in keys])
+    value_str = ','.join(['?' for key in keys])
+    values = [str(e) for e in list(args.values())]
+    return cursor.execute('INSERT INTO `{0}` ({}) VALUES {}'.format(table, key_str, values), tuple(values))
+
+def _saveAnswer(aid, qid, username, content, vote):
+    args = {'id': aid, 'q_id': qid, 'user_id': username, 'text': content, 'vote': vote, 'fetch_time': int(time.time())}
+    return insert_table('answer', args)
+
+def parse_answer_pure(content) {
+    dom = zhihu.loadHTML(content)
+    answerdom = dom->getElementById('zh-question-answer-wrap')
+    if (empty(answerdom)) {
+        slog('warinng: no #zh-question-answer-wrap')
+        file_put_contents('last_error.html', content)
+        throw new Exception("no #zh-question-answer-wrap", 1)
+    }
+    foreach (answerdom->getElementsByTagName('div') as div) {
+        if (class = div->getAttribute('class')) {
+            class = explode(' ', class)
+            if (in_array('zm-editable-content', class)) {
+                answer= div->C14N()
+            }
+        }
+    }
+    foreach (answerdom->getElementsByTagName('span') as span) {
+        if (class = span->getAttribute('class') == 'count') {
+            vote = intval(span->textContent)
+        }
+    }
+    
+    q = dom->getElementById('zh-question-title')
+    a = q->getElementsByTagName('a')->item(0)
+    question = a->textContent
+    
+    descript = dom->getElementById('zh-question-detail')
+    descript = descript->getElementsByTagName('div')->item(0)->C14N()
+    
+    return array(question, descript, answer, vote)
+}
+
+def saveAnswer(base_url, username, answer_link_list):
+    regex = re.compile(r'^/question/(\d+)/answer/(\d+)')
+    conn = http.client.HTTPConnection('www.zhihu.com')
+
+    success_ratio = None
+    avg = None
+    for url in answer_link_list:
+        matches = regex.search(url)
+        if matches is None:
+            raise Exception('url not good')
+        qid = matches.group(1)
+        aid = matches.group(2)
+        print("\turl")
+        timer.timer('saveAnswer')
+        conn.request("GET", url)
+        response = conn.getresponse()
+        if response is None:
+            raise Exception('no response')
+        code = response.status
+        print("\t[code]")
+        if code != 200: # fail fast
+            print("\tfail\n")
+            slog("url [code] error")
+            success_ratio = get_average(0, 'success_ratio')
+            continue
+        } else {
+            success_ratio = get_average(1, 'success_ratio')
+        }
+        content = response.read()
+        t = timer.timer('saveAnswer')
+        avg = int(get_average(t))
+        print("\tt ms\n")
+        if len(content) == 0:
+            print("content is empty\n")
+            slog("url [code] empty")
+            return False
+        question, descript, content, vote = parse_answer_pure(content)
+        slog("url [code] ^vote\tquestion")
+
+        zhihu.saveQuestion(qid, question, descript)
+
+        zhihu._saveAnswer(aid, qid, username, content, vote)
+    if success_ratio is not None and avg is not None:
+        success_ratio = int(success_ratio*100)
+        print("\tAvg: {} ms\tsuccess_ratio: {}%\n".format(avg, success_ratio))
