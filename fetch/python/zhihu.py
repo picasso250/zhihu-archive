@@ -316,7 +316,7 @@ def saveAnswer(conn, username, answer_link_list):
         _saveAnswer(aid, qid, username, content, vote)
     if success_ratio is not None and avg is not None:
         success_ratio = int(success_ratio*100)
-        print("\tAvg: {} ms\tsuccess_ratio: {}%\n".format(avg, success_ratio))
+        print("\tAvg: {} ms\tsuccess_ratio: {}%".format(avg, success_ratio))
 
 def set_question_fetch(qid, fetch):
     sets = {'fetch': fetch}
