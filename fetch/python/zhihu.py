@@ -1,6 +1,5 @@
 #coding: utf-8
 
-import sys
 import db
 
 # logic
@@ -53,14 +52,12 @@ def getNotFetchedUserName():
     return false
 
 def update_user_by_name(username, args):
-    if (empty(args)):
-        return true
-    u = get_table('user')
-    newdata = {'set': args}
-    rs = u.update({"name": username}, newdata, {'upsert': true})
-    if (not rs['ok']):
-        print(rs['err'])
-    return rs
+    cursor = db.connect().cursor()
+    keys = args.keys()
+    key_str = ','.join([key+'=?' for key in keys])
+    values = [str(e) for e in list(args.values())]
+    values.append(username)
+    return cursor.execute('UPDATE user set '+key_str+' where name=?', tuple(values))
 
 def getUids():
     u = get_table('user')

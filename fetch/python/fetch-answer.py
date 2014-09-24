@@ -1,6 +1,8 @@
 #coding: utf-8
 
+import sys
 import zhihu
+import timer
 
 base_url = 'http://www.zhihu.com'
 
@@ -8,10 +10,10 @@ count = zhihu.getNotFetchedUserCount()
 print( "there are count user to fetch\n")
 n = 0
 while True:
-    if len(sys.argc) > 1:
+    if len(sys.argv) > 1:
         username = sys.argv[1]
     else:
-        username = zhihu.getNotFetchedUserName(n)
+        username = zhihu.getNotFetchedUserName()
     if username is None:
         print('Complete!')
         break
@@ -19,9 +21,9 @@ while True:
     n += 1
     url = "{}/people/username/answers".format(base_url)
     print( "\nfetch No.n username\t")
-    zhihu.timer()
+    timer.timer()
     code, content = zhihu.uget(url)
-    t = zhihu.timer()
+    t = timer.timer()
     avg = int(zhihu.get_average(t, 'user page'))
     print( "[code]\tt ms\tAvg: avg ms\n")
     if code == 404:
@@ -47,9 +49,9 @@ while True:
         for i in range(2, num):
             print( "\nNo. n fetch page i\t")
             url_page = "{}?page={:d}".format(url, i)
-            zhihu.timer()
+            timer.timer()
             code, content = zhihu.uget(url_page)
-            t = zhihu.timer()
+            t = timer.timer()
             avg = int(zhihu.get_average(t, 'user page'))
             slog("url_page [code]")
             print( "[code]\tt ms\tAvg: avg ms\n")
