@@ -11,6 +11,11 @@ FETCH_FAIL = 3
 from html.parser import HTMLParser
 
 class ZhihuParser(HTMLParser):
+    def init(self):
+        self.in_zh_pm_page_wrap = False
+        self.in_zh_profile_answer_list = False
+        self.question_link_list = []
+
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
         # print(attrs)
@@ -20,9 +25,18 @@ class ZhihuParser(HTMLParser):
         if self.in_zh_pm_page_wrap and tag == 'img':
             # print("Encountered a start tag:", tag, attrs)
             if 'class' in attrs and attrs['class'] == 'zm-profile-header-img zg-avatar-big zm-avatar-editor-preview':
-                print('find img.')
+                # print('find img.')
                 self.avatar = attrs['src']
                 return False
+
+        if 'id' in attrs and attrs['id'] == 'zh-profile-answer-list':
+            self.in_zh_profile_answer_list = True
+        if self.in_zh_profile_answer_list and tag == 'a':
+            # print("Encountered a start tag:", tag, attrs)
+            if 'class' in attrs and attrs['class'] == 'question_link':
+                self.question_link_list.append(attrs['href'])
+                return False
+
     def handle_endtag(self, tag):
         # print("Encountered an end tag :", tag)
         pass
@@ -35,7 +49,7 @@ def slog(msg):
 
 def get_avatar_src(content):
     parser = ZhihuParser()
-    parser.in_zh_pm_page_wrap = False
+    parser.init()
     parser.feed(content.decode())
     return parser.avatar
 
@@ -93,3 +107,9 @@ def getUids():
     for v in c:
         ret.append(v['name'])
     return ret
+
+def get_answer_link_list(content):
+    parser = ZhihuParser()
+    parser.init()
+    parser.feed(content.decode())
+    return parser.question_link_list

@@ -48,7 +48,7 @@ while True:
     
     zhihu.update_user_by_name(username, {'avatar': src})
 
-    link_list = get_answer_link_list(content)
+    link_list = zhihu.get_answer_link_list(content)
     rs = zhihu.saveAnswer(base_url, username, link_list)
 
     num = zhihu.get_page_num(content)
