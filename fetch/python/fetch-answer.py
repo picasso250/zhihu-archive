@@ -22,6 +22,7 @@ while True:
     n += 1
     url = "/people/{}/answers".format(username)
     print("\n", n, url, "\t", end='')
+    sys.stdout.flush()
     timer.timer()
     # print(url)
     conn.request("GET", url)
@@ -54,7 +55,8 @@ while True:
     num = zhihu.get_page_num(content)
     if num > 1:
         for i in range(2, num):
-            print( "\nNo. n fetch page i\t")
+            print("\n{} page {}\t".format(n, i), end='')
+            sys.stdout.flush()
             url_page = "{}?page={:d}".format(url, i)
             timer.timer()
             conn.request("GET", url_page)
@@ -63,7 +65,7 @@ while True:
             avg = int(zhihu.get_average(t, 'user page'))
             code = response.status
             zhihu.slog("url_page [code]")
-            print( "[code]\tt ms\tAvg: avg ms\n")
+            print("[{}]\t{} ms\tAvg: {} ms".format(code, t, avg))
             if code != 200:
                 print( "奇奇怪怪的返回码 code\n")
                 continue

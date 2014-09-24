@@ -1,6 +1,6 @@
 #coding: utf-8
 
-import time, re
+import time, re, sys
 import db
 import timer
 
@@ -77,15 +77,15 @@ class ZhihuParser(HTMLParser):
             self.in_title = True
         if 'id' in attrs and attrs['id'] == 'zh-question-title':
             self.in_zh_question_title = True
-            print('in_zh_question_title')
+            # print('in_zh_question_title')
 
         if self.in_zh_question_detail and not self.in_detail and tag == 'div':
-            print('#zh-question-detail div')
+            # print('#zh-question-detail div')
             self.in_detail = True
             self.stack = []
         if 'id' in attrs and attrs['id'] == 'zh-question-detail':
             self.in_zh_question_detail = True
-            print('#zh-question-detail')
+            # print('#zh-question-detail')
 
         if self.in_detail or self.in_content:
             self.stack.append(tag)
@@ -198,7 +198,7 @@ def insert_table(table, args):
     value_str = ','.join(['?' for key in keys])
     values = [str(e) for e in list(args.values())]
     sql = 'INSERT INTO `{}` ({}) VALUES ({})'.format(table, key_str, value_str)
-    print(sql)
+    # print(sql)
     return cursor.execute(sql, tuple(values))
 
 def _saveAnswer(aid, qid, username, content, vote):
@@ -225,14 +225,15 @@ def saveAnswer(conn, username, answer_link_list):
             raise Exception('url not good')
         qid = matches.group(1)
         aid = matches.group(2)
-        print("\turl")
+        print("\t{}".format(url), end='')
+        sys.stdout.flush()
         timer.timer('saveAnswer')
         conn.request("GET", url)
         response = conn.getresponse()
         if response is None:
             raise Exception('no response')
         code = response.status
-        print("\t[code]")
+        print("\t[{}]".format(code), end='')
         if code != 200: # fail fast
             print("\tfail\n")
             slog("url [code] error")
@@ -243,7 +244,7 @@ def saveAnswer(conn, username, answer_link_list):
         content = response.read()
         t = timer.timer('saveAnswer')
         avg = int(get_average(t))
-        print("\tt ms\n")
+        print("\t{} ms".format(t))
         if len(content) == 0:
             print("content is empty\n")
             slog("url [code] empty")
@@ -288,5 +289,5 @@ def get_page_num(content):
     matches = re.findall(r'<a href="\?page=(\d+)', content.decode())
     if matches is None:
         return 1
-    print(matches)
+    # print(matches)
     return max([int(i) for i in matches])
