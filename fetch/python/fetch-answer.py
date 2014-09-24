@@ -17,7 +17,6 @@ while True:
     else:
         username = zhihu.getNotFetchedUserName()
     if username is None:
-        print('Complete!')
         break
     zhihu.update_user_by_name(username, {'fetch': zhihu.FETCH_ING})
     n += 1
@@ -79,3 +78,4 @@ while True:
         break
 
 conn.close()
+print('Complete!')
