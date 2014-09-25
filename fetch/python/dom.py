@@ -12,6 +12,18 @@ class DomElement(object):
         self.value = None
     def __str__(self):
         return '<{}>'.format(self.tag)
+    def c14n(self):
+        if self.children:
+            inner = '\n'.join([e.c14n() for e in self.children])
+        else:
+            inner = self.value
+        if self.tag == 'root':
+            return inner
+        elif self.tag == 'text':
+            return self.value
+        else:
+            attrs = ''.join([' {}="{}"'.format(k, v) for k, v in self.attrs])
+            return '<{0}{1}>\n{2}\n</{0}>'.format(self.tag, attrs, inner)
 
 class DomParser(HTMLParser):
     def init(self):
@@ -23,9 +35,12 @@ class DomParser(HTMLParser):
         elem.attrs = attrs
         return elem
 
+    def is_alone(self, tag):
+        return tag in ['br', 'hr', 'img', 'meta', 'link']
+
     def handle_starttag(self, tag, attrs):
         print("Start tag :", tag)
-        if self.root is not None and self.root.tag not in ['br', 'hr', 'img', 'meta', 'link']:
+        if self.root is not None and not self.is_alone(self.root.tag):
             # root have parent
             # we are going deeper
             self.parents.append(self.root)
@@ -58,6 +73,14 @@ class DomParser(HTMLParser):
         # print(data)
         if self.root is not None:
             self.root.value = data
+        else:
+            data = data.strip()
+            if len(data) > 0:
+                if self.root is not None and not self.is_alone(self.root.tag):
+                    # root have parent
+                    # we are going deeper
+                    self.parents.append(self.root)
+                self.root = self.build_elem('text')
 
 def html2dom(content):
     parser = DomParser()
@@ -67,4 +90,4 @@ def html2dom(content):
 
 with open('last.html') as f:
     dom = html2dom(f.read())
-    print(dom)
+    print(dom.c14n())
