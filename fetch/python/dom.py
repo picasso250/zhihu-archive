@@ -63,23 +63,22 @@ class DomParser(HTMLParser):
         elem.attrs = attrs
         return elem
 
-
-
     # pre-condition:
     #  1. we are encounting a node, whose tag is `tag`, attributes is `attr`, we call it _next node_
     #  2. `self.root` is the parent of next node(`parent condition`), or sibling(`sibling condition`, meta, img or link, etc.)
+    #  3. if previous node is closed correctly, `self.root` should be parent of next node
     #  4. sibling-condition
-    #   3. if `self.state` is `self.STATE_OPEN` and `self.root` type is alone (we encount a unclosed tag last time)
-    #  3. parent-condition, when not in sibling condition and
-    #   1. `self.state` is `self.STATE_OPEN` or `self.STATE_CLOSE` (the most _normal_ condition)
+    #   1. if `self.state` is `self.STATE_OPEN` and `self.root` type is alone (we encount a unclosed tag last time)
+    #  5. parent-condition, when not in sibling condition and
+    #   1. `self.state` is `self.STATE_OPEN` or `self.STATE_CLOSE` (most _normal_ condition)
     #   2. `self.state` is `None` (when we encouter first `<html>`)
-    #  3. `self.root`'s type will not be _text_
-    #  5. `self.state` can be any state include `None`
+    #  6. `self.root`'s type will not be _text_
+    #  7. `self.state` can be any state include `None`
     # post-condition
     #  1. after we encounting a node, we call that node _current node_
-    #  1. `self.root` is current node
-    #  3. if `self.root` is sbling, it has go into it's parent
-    #  3. `self.state` is `self.STATE_OPEN`
+    #  2. `self.root` is current node
+    #  3. if `self.root` is sbling, it has been put into it's parent
+    #  4. `self.state` is `self.STATE_OPEN`
     def handle_starttag(self, tag, attrs):
         node = self.build_node(tag, attrs)
         self._handle_starttag(tag, attrs, node)
@@ -98,7 +97,7 @@ class DomParser(HTMLParser):
             # it must be sibling of current tag
             # print('{} go into parents '.format(self.root))
             self.root.is_alone = True
-            self.parents[-1].children.append(self.root) # brother go into parent, and we colse self.root
+            self.parents[-1].children.append(self.root) # brother go into parent, and we close self.root
             self.root = node
         elif self.state == self.STATE_OPEN or self.state == self.STATE_CLOSE or self.state is None:
             # tag node have parent

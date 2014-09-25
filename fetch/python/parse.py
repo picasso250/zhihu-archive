@@ -31,7 +31,6 @@ class AnswersParser(HTMLParser):
                 self.question_link_list.append(attrs['href'])
                 return False
 
-
 class QuestionParser(HTMLParser):
     def init(self):
         self.regex = re.compile('/people/(.+)$')
