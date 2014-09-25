@@ -109,11 +109,11 @@ def parse_answer_pure(content):
     parser = parse.ZhihuParser()
     parser.init()
     parser.feed(content.decode())
+    print(parser.title, parser.detail, parser.content, parser.count)
     return parser.title, parser.detail, parser.content, parser.count
 
 def saveAnswer(conn, username, answer_link_list):
     regex = re.compile(r'^/question/(\d+)/answer/(\d+)')
-    # conn = http.client.HTTPConnection('www.zhihu.com')
 
     success_ratio = None
     avg = None

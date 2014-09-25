@@ -14,7 +14,7 @@ def insert_table(table, args):
     values = [str(e) for e in list(args.values())]
     sql_tpl = 'INSERT INTO `{}` ({}) VALUES ({})'
     sql = sql_tpl.format(table, key_str, value_str)
-    print(sql_tpl.format(table, key_str, ','.join(["'{}'".format(e) for e in list(args.values())])))
+    # print(sql_tpl.format(table, key_str, ','.join(["'{}'".format(e) for e in list(args.values())])))
     cursor.execute(sql, tuple(values))
     conn.commit()
     return cursor.lastrowid
@@ -28,7 +28,10 @@ def update_table(table, args, where):
     where_str = ','.join(['`{}`=?'.format(key) for key in where.keys()])
     where_values = [str(e) for e in list(where.values())]
     values.append(*where_values)
-    sql = 'UPDATE `{0}` SET {1} WHERE {2}'.format(table, key_str, where_str)
-    # print(sql)
+    sql_tpl = 'UPDATE `{0}` SET {1} WHERE {2}'
+    sql = sql_tpl.format(table, key_str, where_str)
+    key_repr = ','.join(['`{}`="{}"'.format(key, str(value)) for key, value in args.items()])
+    where_repr = ','.join(['`{}`="{}"'.format(key, value) for key, value in where.items()])
+    # print(sql_tpl.format(table, key_repr, where_repr))
     cursor.execute(sql, tuple(values))
     return conn.commit()

@@ -63,6 +63,7 @@ class ZhihuParser(HTMLParser):
         self.in_title = False
         self.in_detail = False
         self.in_content = False
+        self.title = ''
         self.detail = ''
         self.content = ''
         self.stack = []
@@ -123,11 +124,14 @@ class ZhihuParser(HTMLParser):
                     break
     def handle_data(self, data):
         if self.in_count:
-            self.count = data
-            return False
+            print('count', data)
+            data = data.strip()
+            if len(data) > 0:
+                self.count = int(data)
+                self.in_count = False
         if self.in_title:
-            self.title = data
-            return False
+            self.title += data
+            self.in_title = False
         if self.in_detail:
             self.detail += data
         if self.in_content:
