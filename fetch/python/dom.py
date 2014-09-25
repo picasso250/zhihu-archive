@@ -64,7 +64,7 @@ class DomParser(HTMLParser):
     #  3. `self.state` is `self.STATE_OPEN`
     def handle_starttag(self, tag, attrs):
         self.i += 1
-        print("{}. Start tag :{} ".format(self.i, tag), end='')
+        print("{}. Start <{}> ".format(self.i, tag), end='')
         self.print_path()
         if self.root is None:
             raise Exception('no elem? impossible')
@@ -96,7 +96,7 @@ class DomParser(HTMLParser):
     #  1. `self.root` is the parent of leaving node
     #  3. `self.state` is `self.STATE_CLOSE`
     def handle_endtag(self, tag):
-        print("End tag :", tag)
+        print("End <{}>".format(tag))
         if self.state is None:
             raise Exception('state is None')
         if len(self.parents) == 0:
@@ -161,4 +161,4 @@ def html2dom(content):
 
 with open('last.html') as f:
     dom = html2dom(f.read())
-    print(dom.c14n())
+    # print(dom.c14n())
