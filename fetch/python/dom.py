@@ -37,6 +37,7 @@ class DomParser(HTMLParser):
         self.root = self.build_node('root') # current element, when parse finish, it become root
         self.parents = [] # the parents of current element
         self.state = None
+        self.i = 0
 
     def build_node(self, tag, attrs = None):
         elem = DomNode(tag)
@@ -50,10 +51,9 @@ class DomParser(HTMLParser):
     #  1. we are encounting a node, whose tag is `tag`, attributes is `attr`, we call it _next node_
     #  2. `self.root` is the parent of next node(`parent condition`), or sibling(`sibling condition`, meta, img or link, etc.)
     #  4. sibling-condition
-    #   1. if `self.state` is `self.STATE_CLOSE` (most normal condition)
     #   3. if `self.state` is `self.STATE_OPEN` and `self.root` type is alone (we encount a unclosed tag last time)
     #  3. parent-condition, when not in sibling condition and
-    #   1. `self.state` is `self.STATE_OPEN` (the most _normal_ condition)
+    #   1. `self.state` is `self.STATE_OPEN` or `self.STATE_CLOSE` (the most _normal_ condition)
     #   2. `self.state` is `None` (when we encouter first `<html>`)
     #  3. `self.root`'s type will not be _text_
     #  5. `self.state` can be any state include `None`
@@ -63,18 +63,20 @@ class DomParser(HTMLParser):
     #  3. if `self.root` is sbling, it has go into it's parent
     #  3. `self.state` is `self.STATE_OPEN`
     def handle_starttag(self, tag, attrs):
-        print("Start tag :", tag)
+        self.i += 1
+        print("{}. Start tag :{} ".format(self.i, tag), end='')
+        self.print_path()
         if self.root is None:
             raise Exception('no elem? impossible')
         if self.root.tag == 'text':
             raise Exception('text will not be the parent of current tag')
-        if self.state == self.STATE_CLOSE or (self.state == self.STATE_OPEN and self.is_alone(self.root.tag)):
+        if self.state == self.STATE_OPEN and self.is_alone(self.root.tag):
             # it must be sibling of current tag
             parent = self.parents.pop()
-            parent.children.append(self.root) # brother go into parents
+            parent.children.append(self.root) # brother go into parents, and we colse self.root
             self.parents.append(parent)
             self.root = self.build_node(tag, attrs)
-        elif self.state == self.STATE_OPEN or self.state is None:
+        elif self.state == self.STATE_OPEN or self.state == self.STATE_CLOSE or self.state is None:
             # tag node have parent
             # we are going deeper
             self.parents.append(self.root)
@@ -118,9 +120,9 @@ class DomParser(HTMLParser):
         parent = self.parents.pop()
         parent.children.append(self.root)
         self.root = parent
-        self.print_path()
 
         self.state = self.STATE_CLOSE
+        self.print_path()
 
     # pre-condition
     #  1. we are encounting the text node, whose value is `data`
@@ -130,7 +132,7 @@ class DomParser(HTMLParser):
     #  1. `self.root` is the parent of leaving text node, and it contains the text node now
     #  3. `self.state` remains
     def handle_data(self, data):
-        # print(data)
+        print('data', repr(data))
         if self.root is None:
             raise Exception('root can not be None')
         text_node = self.build_text_node(data)
@@ -138,9 +140,10 @@ class DomParser(HTMLParser):
             self.parents[-1].children.append(self.root) # brother go into parents
             self.parents[-1].children.append(text_node)
         self.root.children.append(text_node)
+        self.print_path()
 
     def print_path(self):
-        print('\tparents', end='')
+        print('\t==>', end='')
         for p in self.parents:
             print(',',p, end='')
         print('\t|', self.root)
