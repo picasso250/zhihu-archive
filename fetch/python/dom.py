@@ -28,13 +28,13 @@ class DomNode(object):
 # when any method called or after, `self.parents` should be the chain of parents of `self.root`
 class DomParser(HTMLParser):
     def init(self):
-        self.root = self.build_elem('root') # current element, when parse finish, it become root
+        self.root = self.build_node('root') # current element, when parse finish, it become root
         self.parents = [] # the parents of current element
         self.STATE_OPEN = 1
         self.STATE_CLOSE = 2
         self.STATE_TEXT = 3
 
-    def build_elem(self, tag, attrs = None):
+    def build_node(self, tag, attrs = None):
         elem = DomNode(tag)
         elem.attrs = attrs
         return elem
@@ -44,12 +44,14 @@ class DomParser(HTMLParser):
 
     # pre-condition:
     #  1. we are encounting a node, whose tag is `tag`, attributes is `attr`, we call it _next node_
-    #  2. `self.root` is the parent of next node, or sibling(meta, img or link, etc.) if later, `self.state` is `self.STATE_OPEN`
+    #  2. `self.root` is the parent of next node, or sibling(meta, img or link, etc.)
+    #  3. if `self.root` is sibling of next node, `self.state` is `self.STATE_OPEN` and `self.root` type is alone
     #  3. `self.root`'s type will not be _text_
     #  5. `self.state` can be any state include None
     # post-condition
     #  1. after we encounting a node, we call that node _current node_
     #  1. `self.root` is current node
+    #  3. if `self.root` is sbling, it has go into it's parent
     #  3. `self.state` is `self.STATE_OPEN`
     def handle_starttag(self, tag, attrs):
         print("Start tag :", tag)
@@ -57,11 +59,20 @@ class DomParser(HTMLParser):
             raise Exception('no elem? impossible')
         if self.root.tag == 'text':
             raise Exception('text will not be the parent of current tag')
-        if not self.is_alone(self.root.tag):
-            # root have parent
-            # we are going deeper
-            self.parents.append(self.root)
-        self.root = self.build_elem(tag, attrs)
+        if self.state == self.STATE_OPEN:
+            # generally speaking, we are going deeper
+            if self.is_alone(self.root.tag):
+                # it can not have children, so it must be sibling of current tag
+                parent = self.parents.pop()
+                parent.children.append(self.root) # brother go into parents
+                self.parents.append(parent)
+                self.root = self.build_node(tag, attrs)
+                return
+        # tag node have parent
+        # we are going deeper
+        self.parents.append(self.root)
+        self.root = self.build_node(tag, attrs)
+
         self.state = self.STATE_OPEN
 
     # pre-condition
@@ -109,9 +120,10 @@ class DomParser(HTMLParser):
             raise Exception('root can not be None')
         if self.is_alone(self.root.tag):
             raise Exception(self.root.tag+' can not contain text')
-        text_node = self.build_elem('text')
+        text_node = self.build_node('text')
         text_node.value = data
         self.root.children.append(text_node)
+
         self.state = self.STATE_TEXT
 
 def html2dom(content):
