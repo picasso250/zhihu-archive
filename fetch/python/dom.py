@@ -13,6 +13,7 @@ class DomNode(object):
         self.attrs = None
         self.children = []
         self.value = None
+        self.is_alone = False
 
     def __str__(self):
         attrs = dict(self.attrs)
@@ -31,6 +32,8 @@ class DomNode(object):
             return self.value
         else:
             attrs = ''.join([' {}="{}"'.format(k, v) for k, v in self.attrs])
+            if self.is_alone:
+                return '<{0}{1} />'.format(self.tag, attrs)
             if inner is None:
                 return '<{0}{1}></{0}>'.format(self.tag, attrs)
             return '<{0}{1}>{2}</{0}>'.format(self.tag, attrs, inner)
@@ -70,8 +73,14 @@ class DomParser(HTMLParser):
     #  3. if `self.root` is sbling, it has go into it's parent
     #  3. `self.state` is `self.STATE_OPEN`
     def handle_starttag(self, tag, attrs):
+        node = self.build_node(tag, attrs)
+        self._handle_starttag(tag, attrs, node)
+
+    def _handle_starttag(self, tag, attrs, node):
         self.i += 1
-        # print("{}. Start <{}> {}".format(self.i, tag, attrs), end='\n')
+        attrs_dict = dict(attrs)
+        if 'data-widget' in attrs_dict:
+            print("{}. Start <{}> {}".format(self.i, tag, attrs), end='\n')
         # self.print_path()
         if self.root is None:
             raise Exception('no elem? impossible')
@@ -80,20 +89,25 @@ class DomParser(HTMLParser):
         if self.state == self.STATE_OPEN and is_alone(self.root.tag):
             # it must be sibling of current tag
             # print('{} go into parents '.format(self.root))
-            parent = self.parents.pop()
-            parent.children.append(self.root) # brother go into parent, and we colse self.root
-            self.parents.append(parent)
-            self.root = self.build_node(tag, attrs)
+            self.root.is_alone = True
+            self.parents[-1].children.append(self.root) # brother go into parent, and we colse self.root
+            self.root = node
         elif self.state == self.STATE_OPEN or self.state == self.STATE_CLOSE or self.state is None:
             # tag node have parent
             # we are going deeper
             self.parents.append(self.root)
-            self.root = self.build_node(tag, attrs)
+            self.root = node
         else:
             raise Exception('{} is not sibling or parent of {}'.format(self.root.tag, tag))
 
         self.state = self.STATE_OPEN
         # self.print_path()
+
+    def handle_startendtag(self, tag, attrs):
+        node = self.build_node(tag, attrs)
+        node.is_alone = True
+        self._handle_starttag(tag, attrs, node)
+        self.handle_endtag(tag)
 
     # pre-condition
     #  1. we are leaving the current node
@@ -110,7 +124,6 @@ class DomParser(HTMLParser):
         if len(self.parents) == 0:
             # root will never close
             raise Exception('no parents')
-
 
         if self.root is None:
             raise Exception('root is None')
