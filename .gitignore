@@ -5,3 +5,4 @@ fetch/mongo/fetch.log
 *.log
 __pycache__
 *.db
+fetch/python/last.html
