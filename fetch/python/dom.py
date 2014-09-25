@@ -15,63 +15,55 @@ class DomElement(object):
 
 class DomParser(HTMLParser):
     def init(self):
-        self.dom = []
-        self.cur_elem = None
+        self.root = self.build_elem('root') # current element, when parse finish, it become root
         self.parents = [] # the parents of current element
 
-    def build_elem(self, tag, attrs):
+    def build_elem(self, tag, attrs = None):
         elem = DomElement(tag)
         elem.attrs = attrs
         return elem
 
     def handle_starttag(self, tag, attrs):
         print("Start tag :", tag)
-        if self.cur_elem is not None and self.cur_elem.tag not in ['br', 'hr', 'img', 'meta']:
-            # cur_elem have parent
+        if self.root is not None and self.root.tag not in ['br', 'hr', 'img', 'meta', 'link']:
+            # root have parent
             # we are going deeper
-            self.parents.append(self.cur_elem)
-        self.cur_elem = self.build_elem(tag, attrs)
-        if len(self.parents) > 0 and len(self.parents[-1].children) > 0:
-            # cur_elem have siblings
-            pass
-            # we begin or we run through next sibling
-            pass
+            self.parents.append(self.root)
+        self.root = self.build_elem(tag, attrs)
 
     def handle_endtag(self, tag):
         # untill here, we have had build the current element
         # so let's see where should we put the element
         print("End tag :", tag)
         if len(self.parents) == 0:
-            # current element do not have any parents,
-            # so it should be apppended to root
-            self.dom.append(self.cur_elem)
+            raise Exception('no parents')
+
+        print('\tparents', end='')
+        for p in self.parents:
+            print(',',p, end='')
+        print()
+        print('\tcur_elem', self.root)
+
+        if self.root is None:
+            raise Exception('root is None')
+        if self.root.tag == tag:
+            # close root
+            parent = self.parents.pop()
+            parent.children.append(self.root)
+            self.root = parent
         else:
-            print('parents', end='')
-            for p in self.parents:
-                print('---', p, end='')
-            print()
-            if self.cur_elem.tag == tag:
-                # cur_elem has parents
-                self.parents[-1].children.append(self.cur_elem)
-                self.cur_elem = None
-            elif self.parents[-1].tag == tag:
-                # we will close a parent
-                parent = self.parents.pop()
-                self.parents[-1].children.append(parent)
-                self.cur_elem = None
-            else:
-                raise Exception('what the fuck')
+            raise Exception('what the fuck')
 
     def handle_data(self, data):
         # print(data)
-        if self.cur_elem is not None:
-            self.cur_elem.value = data
+        if self.root is not None:
+            self.root.value = data
 
 def html2dom(content):
     parser = DomParser()
     parser.init()
     parser.feed(content)
-    return parser.dom
+    return parser.root
 
 with open('last.html') as f:
     dom = html2dom(f.read())
