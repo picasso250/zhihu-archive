@@ -28,11 +28,13 @@ class DomNode(object):
 # when any method called or after, `self.parents` should be the chain of parents of `self.root`
 class DomParser(HTMLParser):
     def init(self):
-        self.root = self.build_node('root') # current element, when parse finish, it become root
-        self.parents = [] # the parents of current element
         self.STATE_OPEN = 1
         self.STATE_CLOSE = 2
         self.STATE_TEXT = 3
+
+        self.root = self.build_node('root') # current element, when parse finish, it become root
+        self.parents = [] # the parents of current element
+        self.state = None
 
     def build_node(self, tag, attrs = None):
         elem = DomNode(tag)
@@ -54,7 +56,7 @@ class DomParser(HTMLParser):
     #  3. if `self.root` is sbling, it has go into it's parent
     #  3. `self.state` is `self.STATE_OPEN`
     def handle_starttag(self, tag, attrs):
-        print("Start tag :", tag)
+        print("Start tag :", tag, attrs)
         if self.root is None:
             raise Exception('no elem? impossible')
         if self.root.tag == 'text':
@@ -109,7 +111,7 @@ class DomParser(HTMLParser):
 
     # pre-condition
     #  1. we are encounting the text node, whose value is `data`
-    #  2. `self.root` is the parent of the text node
+    #  2. `self.root` is the parent or the sibling of the text node
     #  5. `self.state` can be any state include `None`
     # post-condition
     #  1. `self.root` is the parent of leaving text node, and it contains the text node now
@@ -118,13 +120,18 @@ class DomParser(HTMLParser):
         # print(data)
         if self.root is None:
             raise Exception('root can not be None')
-        if self.is_alone(self.root.tag):
-            raise Exception(self.root.tag+' can not contain text')
-        text_node = self.build_node('text')
-        text_node.value = data
+        text_node = self.build_text_node(data)
+        if self.state == self.STATE_OPEN and self.is_alone(self.root.tag):
+            self.parents[-1].children.append(self.root) # brother go into parents
+            self.parents[-1].children.append(text_node)
         self.root.children.append(text_node)
 
         self.state = self.STATE_TEXT
+
+    def build_text_node(self, value):
+        text_node = self.build_node('text')
+        text_node.value = value
+        return text_node
 
 def html2dom(content):
     parser = DomParser()
