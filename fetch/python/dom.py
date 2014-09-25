@@ -19,8 +19,10 @@ class DomNode(object):
 
     def __str__(self):
         attrs = dict(self.attrs)
+        if 'id' in attrs:
+            return '<{} id="{}">'.format(self.tag, attrs['id'])
         if 'name' in attrs:
-            return '<{} name="{}"'.format(self.tag, attrs['name'])
+            return '<{} name="{}">'.format(self.tag, attrs['name'])
         return '<{}>'.format(self.tag)
 
     def c14n(self):
@@ -45,6 +47,30 @@ class DomNode(object):
             if len(inner) > 0 and inner[0] == '<':
                 inner = '\n'+inner
             return '<{0}{1}>{2}</{0}>\n'.format(self.tag, attrs, inner)
+
+    def get_element_by_id(self, identity):
+        node = None
+        def search_by_id(e):
+            nonlocal node
+            if e.attrs is None:
+                return True
+            attrs = dict(e.attrs)
+            if 'id' in attrs and attrs['id'] == identity:
+                node = e
+                # print(node)
+                return False
+            return True
+        self.walk(search_by_id)
+        return node
+
+    def walk(self, callback):
+        if not callback(self):
+            return False
+        if len(self.children) > 0:
+            for c in self.children:
+                if not c.walk(callback):
+                    return False
+        return True
 
 # when any method called or after, `self.parents` should be the chain of parents of `self.root`
 class DomParser(HTMLParser):
@@ -198,4 +224,5 @@ def html2dom(content):
 
 with open('last.html') as f:
     dom = html2dom(f.read())
-    print(dom.c14n())
+    # print(dom.c14n())
+    print(dom.get_element_by_id('js-reg-with-mail-in-top').c14n())
