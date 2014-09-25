@@ -192,6 +192,8 @@ def html2dom(content):
     parser = DomParser()
     parser.init()
     parser.feed(content)
+    if len(parser.parents) > 0:
+        raise Exception('root has parents')
     return parser.root
 
 with open('last.html') as f:
