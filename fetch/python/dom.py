@@ -1,5 +1,6 @@
 #coding: utf-8
 
+import html
 from html.parser import HTMLParser
 
 def is_alone(tag):
@@ -13,6 +14,7 @@ class DomNode(object):
         self.attrs = None
         self.children = []
         self.value = None
+        self.decl = None
         self.is_alone = False
 
     def __str__(self):
@@ -23,20 +25,26 @@ class DomNode(object):
 
     def c14n(self):
         if self.children:
-            inner = ''.join([e.c14n()+'\n' for e in self.children])
+            inner = ''.join([e.c14n()+'' for e in self.children])
         else:
             inner = self.value
         if self.tag == 'root':
-            return inner
+            if self.decl is None:
+                return inner
+            return '<!{}>\n{}'.format(self.decl, inner)
         elif self.tag == 'text':
+            if len(self.value.strip()) == 0:
+                return ''
             return self.value
         else:
-            attrs = ''.join([' {}="{}"'.format(k, v) for k, v in self.attrs])
+            attrs = ''.join([' {}="{}"'.format(k, html.escape(v)) for k, v in self.attrs])
             if self.is_alone:
-                return '<{0}{1} />'.format(self.tag, attrs)
+                return '<{0}{1} />\n'.format(self.tag, attrs)
             if inner is None:
-                return '<{0}{1}></{0}>'.format(self.tag, attrs)
-            return '<{0}{1}>{2}</{0}>'.format(self.tag, attrs, inner)
+                return '<{0}{1}></{0}>\n'.format(self.tag, attrs)
+            if len(inner) > 0 and inner[0] == '<':
+                inner = '\n'+inner
+            return '<{0}{1}>{2}</{0}>\n'.format(self.tag, attrs, inner)
 
 # when any method called or after, `self.parents` should be the chain of parents of `self.root`
 class DomParser(HTMLParser):
@@ -78,9 +86,9 @@ class DomParser(HTMLParser):
 
     def _handle_starttag(self, tag, attrs, node):
         self.i += 1
-        attrs_dict = dict(attrs)
-        if 'data-widget' in attrs_dict:
-            print("{}. Start <{}> {}".format(self.i, tag, attrs), end='\n')
+        # attrs_dict = dict(attrs)
+        # if 'data-widget' in attrs_dict:
+        #     print("{}. Start <{}> {}".format(self.i, tag, attrs), end='\n')
         # self.print_path()
         if self.root is None:
             raise Exception('no elem? impossible')
@@ -102,6 +110,9 @@ class DomParser(HTMLParser):
 
         self.state = self.STATE_OPEN
         # self.print_path()
+
+    def handle_decl(self, decl):
+        self.root.decl = decl
 
     def handle_startendtag(self, tag, attrs):
         node = self.build_node(tag, attrs)
