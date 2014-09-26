@@ -20,7 +20,7 @@ def c14n(self):
             return ''
         return self.text
     else:
-        attrs = ''.join([' {}="{}"'.format(k, html.escape(v)) for k, v in self.attrib])
+        attrs = ''.join([' '+k if v is None else ' {}="{}"'.format(k, html.escape(v)) for k, v in self.attrib])
         if inner is None:
             return '<{0}{1}></{0}>\n'.format(self.tag, attrs)
         if len(inner) > 0 and inner[0] == '<':
@@ -58,7 +58,7 @@ class DomParser(HTMLParser):
         self.STATE_CLOSE = 2
         self.STATE_TEXT = 3
 
-        self.parents = [] # the parents of current element
+        self.tag = None
         self.state = None
         self.i = 0
         self.tb = TreeBuilder()
@@ -85,7 +85,11 @@ class DomParser(HTMLParser):
     #  3. if `self.root` is sbling, it has been put into it's parent
     #  4. `self.state` is `self.STATE_OPEN`
     def handle_starttag(self, tag, attrs):
+        if self.state is self.STATE_OPEN and is_alone(self.tag):
+            self.tb.end(self.tag)
         self.tb.start(tag, attrs)
+        self.tag = tag
+        self.state = self.STATE_OPEN
 
     def handle_decl(self, decl):
         self.decl = decl
@@ -104,6 +108,7 @@ class DomParser(HTMLParser):
     #  3. `self.state` is `self.STATE_CLOSE`
     def handle_endtag(self, tag):
         self.tb.end(tag)
+        self.state = self.STATE_CLOSE
 
     # pre-condition
     #  1. we are encounting the text node, whose value is `data`
@@ -114,6 +119,9 @@ class DomParser(HTMLParser):
     #  3. `self.state` remains
     def handle_data(self, data):
         # print('data', repr(data))
+        if self.state is self.STATE_OPEN and is_alone(self.tag):
+            self.tb.end(self.tag)
+            self.state = self.STATE_CLOSE
         self.tb.data(data)
 
     def print_path(self):

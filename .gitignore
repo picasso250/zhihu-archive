@@ -6,3 +6,5 @@ fetch/mongo/fetch.log
 __pycache__
 *.db
 fetch/python/last.html
+fetch/python/a.html
+fetch/python/b.html
