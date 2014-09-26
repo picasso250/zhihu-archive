@@ -11,21 +11,16 @@ def c14n(self):
         inner = ''.join([c14n(e)+'' for e in list(self)])
     else:
         inner = self.text
-    if self.tag == 'root':
-        if self.decl is None:
-            return inner
-        return '<!{}>\n{}'.format(self.decl, inner)
-    elif self.tag == 'text':
+    if self.tag == 'text':
         if len(self.text.strip()) == 0:
             return ''
         return self.text
-    else:
-        attrs = ''.join([' '+k if v is None else ' {}="{}"'.format(k, html.escape(v)) for k, v in self.attrib])
-        if inner is None:
-            return '<{0}{1}></{0}>\n'.format(self.tag, attrs)
-        if len(inner) > 0 and inner[0] == '<':
-            inner = '\n'+inner
-        return '<{0}{1}>{2}</{0}>\n'.format(self.tag, attrs, inner)
+    attrs = ''.join([' '+k if v is None else ' {}="{}"'.format(k, html.escape(v)) for k, v in self.attrib])
+    if inner is None:
+        return '<{0}{1}></{0}>\n'.format(self.tag, attrs)
+    if len(inner) > 0 and inner[0] == '<':
+        inner = '\n'+inner
+    return '<{0}{1}>{2}</{0}>\n'.format(self.tag, attrs, inner)
 
 def get_element_by_id(self, identity):
     node = None
@@ -51,6 +46,19 @@ def walk(self, callback):
                 return False
     return True
 
+class HtmlDoc(object):
+    """docstring for HtmlDoc"""
+    def __init__(self, root, decl = None):
+        super(HtmlDoc, self).__init__()
+        self.root = root
+        self.decl = decl
+
+    def c14n(self):
+        inner = c14n(self.root)
+        if self.decl is None:
+            return inner
+        return '<!{}>\n{}'.format(self.decl, inner)
+        
 # when any method called or after, `self.parents` should be the chain of parents of `self.root`
 class DomParser(HTMLParser):
     def init(self):
@@ -107,6 +115,7 @@ class DomParser(HTMLParser):
     #  1. `self.root` is the parent of leaving node
     #  3. `self.state` is `self.STATE_CLOSE`
     def handle_endtag(self, tag):
+        # print('End </{}>'.format(tag))
         self.tb.end(tag)
         self.state = self.STATE_CLOSE
 
@@ -122,22 +131,20 @@ class DomParser(HTMLParser):
         if self.state is self.STATE_OPEN and is_alone(self.tag):
             self.tb.end(self.tag)
             self.state = self.STATE_CLOSE
-        self.tb.data(data)
-
-    def print_path(self):
-        print('\t==>', end='')
-        for p in self.parents:
-            print(',',p, end='')
-        print('\t|', self.root)
+        if self.state is not None and len(data.strip()) > 0:
+            self.tb.start('text', [('text', data)])
+            self.tb.data(data)
+            self.tb.end('text')
 
 def html2dom(content):
     parser = DomParser()
     parser.init()
     parser.feed(content)
     e = parser.tb.close()
-    return e
+    doc = HtmlDoc(e, parser.decl)
+    return doc
 
 with open('last.html') as f:
-    e = html2dom(f.read())
-    print(c14n(e))
+    doc = html2dom(f.read())
+    print(doc.c14n())
     # print(dom.get_element_by_id('js-reg-with-mail-in-top').c14n())
