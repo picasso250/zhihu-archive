@@ -22,29 +22,28 @@ def c14n(self):
         inner = '\n'+inner
     return '<{0}{1}>{2}</{0}>\n'.format(self.tag, attrs, inner)
 
+def walk(self, callback):
+    if not callback(self):
+        return False
+    if len(list(self)) > 0:
+        for child in list(self):
+            if not walk(child, callback):
+                return False
+    return True
+
 def get_element_by_id(self, identity):
     node = None
     def search_by_id(e):
         nonlocal node
-        if e.attrs is None:
+        if e.attrib is None:
             return True
-        attrs = dict(e.attrs)
+        attrs = dict(e.attrib)
         if 'id' in attrs and attrs['id'] == identity:
             node = e
-            # print(node)
             return False
         return True
-    self.walk(search_by_id)
+    walk(self, search_by_id)
     return node
-
-def walk(self, callback):
-    if not callback(self):
-        return False
-    if len(self.children) > 0:
-        for c in self.children:
-            if not c.walk(callback):
-                return False
-    return True
 
 class HtmlDoc(object):
     """docstring for HtmlDoc"""
@@ -58,7 +57,13 @@ class HtmlDoc(object):
         if self.decl is None:
             return inner
         return '<!{}>\n{}'.format(self.decl, inner)
-        
+
+    def get_element_by_id(self, identity):
+        return get_element_by_id(self.root, identity)
+
+    def walk(self, callback):
+        walk(self.root, callback)
+
 # when any method called or after, `self.parents` should be the chain of parents of `self.root`
 class DomParser(HTMLParser):
     def init(self):
@@ -144,7 +149,9 @@ def html2dom(content):
     doc = HtmlDoc(e, parser.decl)
     return doc
 
-with open('last.html') as f:
-    doc = html2dom(f.read())
-    print(doc.c14n())
-    # print(dom.get_element_by_id('js-reg-with-mail-in-top').c14n())
+# test
+if __name__ == '__main__':
+    with open('last.html') as f:
+        doc = html2dom(f.read())
+        # print(doc.c14n())
+        print(c14n(doc.get_element_by_id('ajax-error-message')))
