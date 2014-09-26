@@ -7,32 +7,25 @@ from xml.etree.ElementTree import TreeBuilder
 def is_alone(tag):
     return tag in ['br', 'hr', 'img', 'meta', 'link']
 def c14n(self):
-    if self.hasChildNodes():
-        inner = ''.join([c14n(e)+'' for e in self.childNodes])
+    if len(list(self)) > 0:
+        inner = ''.join([c14n(e)+'' for e in list(self)])
     else:
-        inner = self.value
-    if self.tagName == 'root':
+        inner = self.text
+    if self.tag == 'root':
         if self.decl is None:
             return inner
         return '<!{}>\n{}'.format(self.decl, inner)
-    elif self.tagName == 'text':
-        if len(self.value.strip()) == 0:
+    elif self.tag == 'text':
+        if len(self.text.strip()) == 0:
             return ''
-        return self.value
+        return self.text
     else:
-        if self.hasAttributes():
-            attrs = self.attributes
-            print(attrs)
-        else:
-            attrs = []
-        attrs = ''.join([' {}="{}"'.format(k, html.escape(v)) for k, v in self.attrs])
-        if self.is_alone:
-            return '<{0}{1} />\n'.format(self.tagName, attrs)
+        attrs = ''.join([' {}="{}"'.format(k, html.escape(v)) for k, v in self.attrib])
         if inner is None:
-            return '<{0}{1}></{0}>\n'.format(self.tagName, attrs)
+            return '<{0}{1}></{0}>\n'.format(self.tag, attrs)
         if len(inner) > 0 and inner[0] == '<':
             inner = '\n'+inner
-        return '<{0}{1}>{2}</{0}>\n'.format(self.tagName, attrs, inner)
+        return '<{0}{1}>{2}</{0}>\n'.format(self.tag, attrs, inner)
 
 def get_element_by_id(self, identity):
     node = None
