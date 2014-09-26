@@ -132,14 +132,14 @@ def parse_answer_pure(content):
             if 'zm-editable-content' in classes:
                 answer = dom.c14n(div)
     span = get_list_by_attrib(answerdom.iter('span'), 'class', 'count')[0]
-    vote = int(span.text)
+    vote = int(span[0].text)
     
     q = doc.get_element_by_id('zh-question-title')
-    a = q.iter('a')[0]
-    question = a.text
+    a = q[0][0]
+    question = a[0].text
     
     descript = doc.get_element_by_id('zh-question-detail')
-    descript = c14n(descript.iter('div')[0])
+    descript = ''.join([dom.c14n(e) for e in descript[0]])
     
     return (question, descript, answer, vote)
 
