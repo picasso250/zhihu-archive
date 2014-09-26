@@ -15,7 +15,7 @@ def c14n(self):
         if len(self.text.strip()) == 0:
             return ''
         return self.text
-    attrs = ''.join([' '+k if v is None else ' {}="{}"'.format(k, html.escape(v)) for k, v in self.attrib])
+    attrs = ''.join([' '+k if v is None else ' {}="{}"'.format(k, html.escape(v)) for k, v in self.attrib.items()])
     if inner is None:
         return '<{0}{1}></{0}>\n'.format(self.tag, attrs)
     if len(inner) > 0 and inner[0] == '<':
@@ -100,7 +100,7 @@ class DomParser(HTMLParser):
     def handle_starttag(self, tag, attrs):
         if self.state is self.STATE_OPEN and is_alone(self.tag):
             self.tb.end(self.tag)
-        self.tb.start(tag, attrs)
+        self.tb.start(tag, dict(attrs))
         self.tag = tag
         self.state = self.STATE_OPEN
 
@@ -108,7 +108,7 @@ class DomParser(HTMLParser):
         self.decl = decl
 
     def handle_startendtag(self, tag, attrs):
-        self.tb.start(tag, attrs)
+        self.tb.start(tag, dict(attrs))
         self.tb.end(tag)
 
     # pre-condition

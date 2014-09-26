@@ -16,18 +16,21 @@ def slog(msg):
     pass
 
 def get_list_by_attrib(node_list, key, value):
-    ret = None
+    ret = []
     for e in node_list:
-        for k, v in e.attrib:
-            if k == key and value == v:
-                ret.append(e)
+        if e.get(key) == value:
+            ret.append(e)
     return ret
 
 def get_avatar_src(content):
     doc = dom.html2dom(content.decode())
     wrap = doc.get_element_by_id('zh-pm-page-wrap')
-    img_list = wrap.find('img')
-    img = get_list_by_attrib(img_list, 'class', 'zm-profile-header-img zg-avatar-big zm-avatar-editor-preview')[0]
+    # print(dom.c14n(wrap))
+    img_list = wrap.iter('img')
+    # if img_list is None:
+    #     raise Exception('no .zh-pm-page-wrap img')
+    img_list = get_list_by_attrib(img_list, 'class', 'zm-profile-header-img zg-avatar-big zm-avatar-editor-preview')
+    img = img_list[0]
     return img.get('src')
 
 data = {}
@@ -89,9 +92,9 @@ def getUids():
 def get_answer_link_list(content):
     doc = dom.html2dom(content.decode())
     wrap = doc.get_element_by_id('zh-profile-answer-list')
-    node_list = wrap.find('a')
+    node_list = wrap.iter('a')
     question_link_list = get_list_by_attrib(node_list, 'class', 'question_link')
-    return [e.get('href') in question_link_list]
+    return [e.get('href') for e in question_link_list]
 
 def insert_user(args):
     user_id = db.insert_table('user', args)
@@ -122,21 +125,21 @@ def parse_answer_pure(content):
         slog('warinng: no #zh-question-answer-wrap')
         # file_put_contents('last_error.html', content)
         raise Exception("no #zh-question-answer-wrap")
-    for div in answerdom.find('div'):
+    for div in answerdom.iter('div'):
         classes = div.get('class')
         if classes is not None:
             classes = classes.split(' ')
             if 'zm-editable-content' in classes:
                 answer = dom.c14n(div)
-    span = get_list_by_attrib(answerdom.find('span'), 'class', 'count')[0]
+    span = get_list_by_attrib(answerdom.iter('span'), 'class', 'count')[0]
     vote = int(span.text)
     
     q = doc.get_element_by_id('zh-question-title')
-    a = q.find('a')[0]
+    a = q.iter('a')[0]
     question = a.text
     
     descript = doc.get_element_by_id('zh-question-detail')
-    descript = c14n(descript.find('div')[0])
+    descript = c14n(descript.iter('div')[0])
     
     return (question, descript, answer, vote)
 
