@@ -55,7 +55,7 @@ while True:
     num = zhihu.get_page_num(content)
     if num > 1:
         for i in range(2, num):
-            print("\n{}. {} page {}\t".format(n, username, i), end='')
+            print("\n{}. {} Page {}\t".format(n, username, i), end='')
             sys.stdout.flush()
             url_page = "{}?page={:d}".format(url, i)
             timer.timer()
@@ -67,7 +67,7 @@ while True:
             zhihu.slog("url_page [code]")
             print("[{}]\t{} ms\tAvg: {} ms".format(code, t, avg))
             if code != 200:
-                print( "奇奇怪怪的返回码 code\n")
+                print("奇奇怪怪的返回码 code")
                 continue
             content = response.read()
             link_list = zhihu.get_answer_link_list(content)

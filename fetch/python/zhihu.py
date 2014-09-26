@@ -130,7 +130,7 @@ def parse_answer_pure(content):
         if classes is not None:
             classes = classes.split(' ')
             if 'zm-editable-content' in classes:
-                answer = dom.c14n(div)
+                answer = ''.join([dom.c14n(e) for e in div])
     span = get_list_by_attrib(answerdom.iter('span'), 'class', 'count')[0]
     vote = int(span[0].text)
     
@@ -237,7 +237,15 @@ def get_page_num(content):
 def get_username_list(content):
     with open('last_question.html', 'w') as f:
         f.write(content.decode())
-    parser = parse.QuestionParser()
-    parser.init()
-    parser.feed(content.decode())
-    return parser.users
+
+    doc = dom.html2dom(content.decode())
+    ret = {}
+    regex = re.compile('/people/(.+)')
+    for node in doc.root.iter('a'):
+        href = node.get('href')
+        if href is not None:
+            matches = regex.search(href)
+            if matches is not None:
+                username = matches.group(1)
+                ret[username] = node[0].text
+    return ret
