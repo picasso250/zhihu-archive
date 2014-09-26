@@ -12,7 +12,7 @@ def save(a):
     time.sleep(1)
     return a
 
-MAX_TREAD = 4
+MAX_TREAD_NUM = 4
 dblock = threading.Lock()
 class FetchTread(threading.Thread):
     """docstring for FetchTread"""
@@ -23,7 +23,7 @@ class FetchTread(threading.Thread):
             print('end', a)
 
 
-while threading.active_count() < MAX_TREAD*2:
+while threading.active_count() < MAX_TREAD_NUM*2:
     print('active_count', threading.active_count())
     t = FetchTread()
     t.start()

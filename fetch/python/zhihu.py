@@ -1,10 +1,12 @@
 #coding: utf-8
 
 import time, re, sys
+import threading
 import sqlite3
 import db
 import timer
 import dom
+import http.client
 
 # logic
 
@@ -12,8 +14,9 @@ FETCH_ING = 1
 FETCH_OK = 2
 FETCH_FAIL = 3
 
-def slog(msg):
-    pass
+def slog(*args):
+    with open('{}.log'.format(threading.current_thread().name), 'a') as f:
+        f.write('{}\n'.format(' '.join([str(e) for e in args])))
 
 def get_list_by_attrib(node_list, key, value):
     ret = []
@@ -143,7 +146,30 @@ def parse_answer_pure(content):
     
     return (question, descript, answer, vote)
 
-def saveAnswer(conn, username, answer_link_list):
+def get_url(conn, url):
+    try:
+        conn.request("GET", url)
+        response = conn.getresponse()
+    except http.client.ResponseNotReady as e:
+        print('http.client.ResponseNotReady')
+        return None
+    except http.client.CannotSendRequest as e:
+        print('http.client.CannotSendRequest')
+        return None
+    code = response.status
+    print('.',end='')
+    slog("\t[{}]".format(code))
+    if code != 200: # fail fast
+        slog("\tfail\n")
+        slog("url [code] error")
+        success_ratio = get_average(0, 'success_ratio')
+        return None
+    else:
+        success_ratio = get_average(1, 'success_ratio')
+    content = response.read()
+    return content
+
+def saveAnswer(conn, username, answer_link_list, dblock):
     regex = re.compile(r'^/question/(\d+)/answer/(\d+)')
 
     success_ratio = None
@@ -154,36 +180,26 @@ def saveAnswer(conn, username, answer_link_list):
             raise Exception('url not good')
         qid = matches.group(1)
         aid = matches.group(2)
-        print("\t{}".format(url), end='')
+        slog("\t{}".format(url))
         sys.stdout.flush()
         timer.timer('saveAnswer')
-        conn.request("GET", url)
-        response = conn.getresponse()
-        if response is None:
-            raise Exception('no response')
-        code = response.status
-        print("\t[{}]".format(code), end='')
-        if code != 200: # fail fast
-            print("\tfail\n")
-            slog("url [code] error")
-            success_ratio = get_average(0, 'success_ratio')
+        content = get_url(conn, url)
+        if content is None:
             continue
-        else:
-            success_ratio = get_average(1, 'success_ratio')
-        content = response.read()
+        success_ratio = get_average(0 if content is None else 1, 'success_ratio')
         t = timer.timer('saveAnswer')
         avg = int(get_average(t))
-        print("\t{} ms".format(t))
+        slog("\t{} ms".format(t))
         if len(content) == 0:
-            print("content is empty\n")
+            slog("content is empty\n")
             slog("url [code] empty")
             return False
         question, descript, content, vote = parse_answer_pure(content)
-        slog("url [code] ^vote\tquestion")
+        slog("{}\t^{}\t{}".format(url, vote, question))
 
-        saveQuestion(qid, question, descript)
-
-        _saveAnswer(aid, qid, username, content, vote)
+        with dblock:
+            saveQuestion(qid, question, descript)
+            _saveAnswer(aid, qid, username, content, vote)
     if success_ratio is not None and avg is not None:
         success_ratio = int(success_ratio*100)
         print("\tAvg: {} ms\tsuccess_ratio: {}%".format(avg, success_ratio))
@@ -249,3 +265,28 @@ def get_username_list(content):
                 username = matches.group(1)
                 ret[username] = node[0].text
     return ret
+
+def fetch_people_page(conn, username, page = 1):
+    url = "/people/{}/answers".format(username)
+    url_page = "{}?page={:d}".format(url, page)
+    print("\n{}\t".format(url_page), end='')
+    sys.stdout.flush()
+    timer.timer()
+    conn.request("GET", url_page)
+    response = conn.getresponse()
+    t = timer.timer()
+    avg = int(get_average(t, 'user page'))
+    code = response.status
+    print("[{}]\t{} ms\tAvg: {} ms".format(code, t, avg))
+    if code == 404:
+        slog("user username fetch fail, code code")
+        update_user_by_name(username, {'fetch': FETCH_FAIL})
+        print( "没有这个用户", username)
+        return None
+    if code != 200:
+        slog("user username fetch fail, code code")
+        update_user_by_name(username, {'fetch': FETCH_FAIL})
+        print( "奇奇怪怪的返回码", code)
+        return None
+    content = response.read()
+    return content
