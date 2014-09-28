@@ -2,7 +2,7 @@
 
 import html
 from html.parser import HTMLParser
-from xml.etree.ElementTree import TreeBuilder
+import xml.etree.ElementTree
 
 def is_alone(tag):
     return tag in ['br', 'hr', 'img', 'meta', 'link']
@@ -64,6 +64,16 @@ class HtmlDoc(object):
     def walk(self, callback):
         walk(self.root, callback)
 
+class HtmlTreeBuilder(xml.etree.ElementTree.TreeBuilder):
+    """docstring for HtmlTreeBuilder"""
+    def end(self, tag):
+        elem = super.end(tag)
+        # if it has only one child and the child's type is text
+        if len(elem) == 0:
+            if elem[0].tag == 'text':
+                elem.text = elem[0].text
+                del elem[0]
+
 # when any method called or after, `self.parents` should be the chain of parents of `self.root`
 class DomParser(HTMLParser):
     def init(self):
@@ -74,7 +84,7 @@ class DomParser(HTMLParser):
         self.tag = None
         self.state = None
         self.i = 0
-        self.tb = TreeBuilder()
+        self.tb = HtmlTreeBuilder()
 
     def build_node(self, tag, attrs = None):
         elem = DomNode(tag)
@@ -106,10 +116,11 @@ class DomParser(HTMLParser):
     #  1. we are leaving the current node
     #  4. `self.state` can be any state but not `None`
     # post-condition
+    #  1. text are properly assigned
     #  3. `self.state` is `self.STATE_CLOSE`
     def handle_endtag(self, tag):
         # print('End </{}>'.format(tag))
-        self.tb.end(tag)
+        elem = self.tb.end(tag)
         self.state = self.STATE_CLOSE
 
     # pre-condition
