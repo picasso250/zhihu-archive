@@ -7,6 +7,11 @@ import xml.etree.ElementTree
 def is_alone(tag):
     return tag in ['br', 'hr', 'img', 'meta', 'link']
 def c14n(self):
+    # print(self.attrib)
+    attrs_list = [' '+k if v is None else ' {}="{}"'.format(k, html.escape(v)) for k, v in self.attrib.items()]
+    attrs = ''.join(attrs_list)
+    if is_alone(self.tag):
+        return '<{0}{1} />\n'.format(self.tag, attrs)
     if len(list(self)) > 0:
         inner = ''.join([c14n(e)+'' for e in list(self)])
     else:
@@ -15,13 +20,10 @@ def c14n(self):
         if len(self.text.strip()) == 0:
             return ''
         return self.text
-    attrs = ''.join([' '+k if v is None else ' {}="{}"'.format(k, html.escape(v)) for k, v in self.attrib.items()])
     if inner is None:
         return '<{0}{1}></{0}>\n'.format(self.tag, attrs)
     if len(inner) > 0 and inner[0] == '<':
         inner = '\n'+inner
-    if is_alone(self.tag):
-        return '<{0}{1} />\n'.format(self.tag, attrs)
     return '<{0}{1}>{2}</{0}>\n'.format(self.tag, attrs, inner)
 
 def walk(self, callback):
@@ -71,6 +73,7 @@ class HtmlTreeBuilder(xml.etree.ElementTree.TreeBuilder):
     def end(self, tag):
         elem = super().end(tag)
         # if it has only one child and the child's type is text
+        # print('end elem', c14n(elem))
         if len(elem) == 1:
             if elem[0].tag == 'text':
                 elem.text = elem[0].text
@@ -139,7 +142,7 @@ class DomParser(HTMLParser):
             self.tb.end(self.tag)
             self.state = self.STATE_CLOSE
         if self.state is not None and len(data.strip()) > 0:
-            self.tb.start('text', [('text', data)])
+            self.tb.start('text')
             self.tb.data(data)
             self.tb.end('text')
 
