@@ -83,19 +83,10 @@ class DomParser(HTMLParser):
 
     # pre-condition:
     #  1. we are encounting a node, whose tag is `tag`, attributes is `attr`, we call it _next node_
-    #  2. `self.root` is the parent of next node(`parent condition`), or sibling(`sibling condition`, meta, img or link, etc.)
-    #  3. if previous node is closed correctly, `self.root` should be parent of next node
-    #  4. sibling-condition
-    #   1. if `self.state` is `self.STATE_OPEN` and `self.root` type is alone (we encount a unclosed tag last time)
-    #  5. parent-condition, when not in sibling condition and
-    #   1. `self.state` is `self.STATE_OPEN` or `self.STATE_CLOSE` (most _normal_ condition)
-    #   2. `self.state` is `None` (when we encouter first `<html>`)
-    #  6. `self.root`'s type will not be _text_
+    #  2. if last node have been not closed properly yet, then last node is alone
     #  7. `self.state` can be any state include `None`
     # post-condition
     #  1. after we encounting a node, we call that node _current node_
-    #  2. `self.root` is current node
-    #  3. if `self.root` is sbling, it has been put into it's parent
     #  4. `self.state` is `self.STATE_OPEN`
     def handle_starttag(self, tag, attrs):
         if self.state is self.STATE_OPEN and is_alone(self.tag):
@@ -113,11 +104,8 @@ class DomParser(HTMLParser):
 
     # pre-condition
     #  1. we are leaving the current node
-    #  2. `self.root` is the current node(who has been build), or the last child of the current node
-    #  3. if `self.root` is the last child of the current node, that child should be alone, and should be not put into current node yet
     #  4. `self.state` can be any state but not `None`
     # post-condition
-    #  1. `self.root` is the parent of leaving node
     #  3. `self.state` is `self.STATE_CLOSE`
     def handle_endtag(self, tag):
         # print('End </{}>'.format(tag))
@@ -126,13 +114,13 @@ class DomParser(HTMLParser):
 
     # pre-condition
     #  1. we are encounting the text node, whose value is `data`
-    #  2. `self.root` is the parent or the sibling of the text node
     #  5. `self.state` can be any state include `None`
     # post-condition
     #  1. `self.root` is the parent of leaving text node, and it contains the text node now
     #  3. `self.state` remains
     def handle_data(self, data):
         # print('data', repr(data))
+        # if the last node is alone but has not been closed yet, we should close it
         if self.state is self.STATE_OPEN and is_alone(self.tag):
             self.tb.end(self.tag)
             self.state = self.STATE_CLOSE
