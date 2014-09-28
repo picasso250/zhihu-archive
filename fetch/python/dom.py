@@ -20,6 +20,8 @@ def c14n(self):
         return '<{0}{1}></{0}>\n'.format(self.tag, attrs)
     if len(inner) > 0 and inner[0] == '<':
         inner = '\n'+inner
+    if is_alone(self.tag):
+        return '<{0}{1} />\n'.format(self.tag, attrs)
     return '<{0}{1}>{2}</{0}>\n'.format(self.tag, attrs, inner)
 
 def walk(self, callback):
@@ -67,12 +69,13 @@ class HtmlDoc(object):
 class HtmlTreeBuilder(xml.etree.ElementTree.TreeBuilder):
     """docstring for HtmlTreeBuilder"""
     def end(self, tag):
-        elem = super.end(tag)
+        elem = super().end(tag)
         # if it has only one child and the child's type is text
-        if len(elem) == 0:
+        if len(elem) == 1:
             if elem[0].tag == 'text':
                 elem.text = elem[0].text
                 del elem[0]
+        return elem
 
 # when any method called or after, `self.parents` should be the chain of parents of `self.root`
 class DomParser(HTMLParser):
@@ -152,5 +155,5 @@ def html2dom(content):
 if __name__ == '__main__':
     with open('last.html') as f:
         doc = html2dom(f.read())
-        # print(doc.c14n())
-        print(c14n(doc.get_element_by_id('ajax-error-message')))
+        print(doc.c14n())
+        # print(c14n(doc.get_element_by_id('ajax-error-message')))
