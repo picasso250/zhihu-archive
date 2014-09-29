@@ -2,11 +2,16 @@
 
 import html
 from html.parser import HTMLParser
-from xml.etree.ElementTree import TreeBuilder
+import xml.etree.ElementTree
 
 def is_alone(tag):
     return tag in ['br', 'hr', 'img', 'meta', 'link']
 def c14n(self):
+    # print(self.attrib)
+    attrs_list = [' '+k if v is None else ' {}="{}"'.format(k, html.escape(v)) for k, v in self.attrib.items()]
+    attrs = ''.join(attrs_list)
+    if is_alone(self.tag):
+        return '<{0}{1} />\n'.format(self.tag, attrs)
     if len(list(self)) > 0:
         inner = ''.join([c14n(e)+'' for e in list(self)])
     else:
@@ -15,7 +20,6 @@ def c14n(self):
         if len(self.text.strip()) == 0:
             return ''
         return self.text
-    attrs = ''.join([' '+k if v is None else ' {}="{}"'.format(k, html.escape(v)) for k, v in self.attrib.items()])
     if inner is None:
         return '<{0}{1}></{0}>\n'.format(self.tag, attrs)
     if len(inner) > 0 and inner[0] == '<':
@@ -64,6 +68,18 @@ class HtmlDoc(object):
     def walk(self, callback):
         walk(self.root, callback)
 
+class HtmlTreeBuilder(xml.etree.ElementTree.TreeBuilder):
+    """docstring for HtmlTreeBuilder"""
+    def end(self, tag):
+        elem = super().end(tag)
+        # if it has only one child and the child's type is text
+        # print('end elem', c14n(elem))
+        if len(elem) == 1:
+            if elem[0].tag == 'text':
+                elem.text = elem[0].text
+                del elem[0]
+        return elem
+
 # when any method called or after, `self.parents` should be the chain of parents of `self.root`
 class DomParser(HTMLParser):
     def init(self):
@@ -74,7 +90,7 @@ class DomParser(HTMLParser):
         self.tag = None
         self.state = None
         self.i = 0
-        self.tb = TreeBuilder()
+        self.tb = HtmlTreeBuilder()
 
     def build_node(self, tag, attrs = None):
         elem = DomNode(tag)
@@ -83,19 +99,10 @@ class DomParser(HTMLParser):
 
     # pre-condition:
     #  1. we are encounting a node, whose tag is `tag`, attributes is `attr`, we call it _next node_
-    #  2. `self.root` is the parent of next node(`parent condition`), or sibling(`sibling condition`, meta, img or link, etc.)
-    #  3. if previous node is closed correctly, `self.root` should be parent of next node
-    #  4. sibling-condition
-    #   1. if `self.state` is `self.STATE_OPEN` and `self.root` type is alone (we encount a unclosed tag last time)
-    #  5. parent-condition, when not in sibling condition and
-    #   1. `self.state` is `self.STATE_OPEN` or `self.STATE_CLOSE` (most _normal_ condition)
-    #   2. `self.state` is `None` (when we encouter first `<html>`)
-    #  6. `self.root`'s type will not be _text_
+    #  2. if last node have been not closed properly yet, then last node is alone
     #  7. `self.state` can be any state include `None`
     # post-condition
     #  1. after we encounting a node, we call that node _current node_
-    #  2. `self.root` is current node
-    #  3. if `self.root` is sbling, it has been put into it's parent
     #  4. `self.state` is `self.STATE_OPEN`
     def handle_starttag(self, tag, attrs):
         if self.state is self.STATE_OPEN and is_alone(self.tag):
@@ -113,31 +120,29 @@ class DomParser(HTMLParser):
 
     # pre-condition
     #  1. we are leaving the current node
-    #  2. `self.root` is the current node(who has been build), or the last child of the current node
-    #  3. if `self.root` is the last child of the current node, that child should be alone, and should be not put into current node yet
     #  4. `self.state` can be any state but not `None`
     # post-condition
-    #  1. `self.root` is the parent of leaving node
+    #  1. text are properly assigned
     #  3. `self.state` is `self.STATE_CLOSE`
     def handle_endtag(self, tag):
         # print('End </{}>'.format(tag))
-        self.tb.end(tag)
+        elem = self.tb.end(tag)
         self.state = self.STATE_CLOSE
 
     # pre-condition
     #  1. we are encounting the text node, whose value is `data`
-    #  2. `self.root` is the parent or the sibling of the text node
     #  5. `self.state` can be any state include `None`
     # post-condition
     #  1. `self.root` is the parent of leaving text node, and it contains the text node now
     #  3. `self.state` remains
     def handle_data(self, data):
         # print('data', repr(data))
+        # if the last node is alone but has not been closed yet, we should close it
         if self.state is self.STATE_OPEN and is_alone(self.tag):
             self.tb.end(self.tag)
             self.state = self.STATE_CLOSE
         if self.state is not None and len(data.strip()) > 0:
-            self.tb.start('text', [('text', data)])
+            self.tb.start('text')
             self.tb.data(data)
             self.tb.end('text')
 
@@ -153,5 +158,5 @@ def html2dom(content):
 if __name__ == '__main__':
     with open('last.html') as f:
         doc = html2dom(f.read())
-        # print(doc.c14n())
-        print(c14n(doc.get_element_by_id('ajax-error-message')))
+        print(doc.c14n())
+        # print(c14n(doc.get_element_by_id('ajax-error-message')))
