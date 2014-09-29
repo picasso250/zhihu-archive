@@ -142,14 +142,14 @@ def parse_answer_pure(content):
             if 'zm-editable-content' in classes:
                 answer = ''.join([dom.c14n(e) for e in div])
     span = get_list_by_attrib(answerdom.iter('span'), 'class', 'count')[0]
-    vote = int(span[0].text)
+    vote = int(span.text)
     
     q = doc.get_element_by_id('zh-question-title')
     a = q[0][0]
     if len(a) == 0:
         print(dom.c14n(a))
         raise Exception('a has no text')
-    question = a[0].text
+    question = a.text
     
     descript = doc.get_element_by_id('zh-question-detail')
     descript = ''.join([dom.c14n(e) for e in descript[0]])
@@ -276,7 +276,7 @@ def get_username_list(content):
             matches = regex.search(href)
             if matches is not None:
                 username = matches.group(1)
-                ret[username] = node[0].text
+                ret[username] = node.text
     return ret
 
 def fetch_people_page(conn, username, page = 1):

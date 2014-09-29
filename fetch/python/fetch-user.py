@@ -25,7 +25,7 @@ while True:
     username_list = zhihu.get_username_list(content)
 
     for username, nickname in username_list.items():
-        print("\t{}\t{}".format(username, nickname), end='')
+        print("\t{:28s}{:8s}".format(username, nickname), end='')
         rs = zhihu.saveUser(username, nickname)
         if rs is not None:
             insert_count += 1
