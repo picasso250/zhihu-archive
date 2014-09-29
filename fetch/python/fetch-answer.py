@@ -14,15 +14,8 @@ s = threading.Semaphore(MAX_THREAD_NUM)
 finish = threading.Event()
 finish.clear()
 
-def fetch_proc(username, logid):
+def fetch_proc(username):
     with dblock:
-        if username is None:
-            username = zhihu.getNotFetchedUserName()
-        else:
-            zhihu.insert_user({'name': username, 'fetch': zhihu.FETCH_ING})
-        if username is None:
-            finish.set()
-            print('Finish')
         zhihu.update_user_by_name(username, {'fetch': zhihu.FETCH_ING})
     conn = http.client.HTTPConnection('www.zhihu.com')
     content = zhihu.fetch_people_page(conn, username)
@@ -53,17 +46,20 @@ def fetch_proc(username, logid):
 
 if len(sys.argv) > 1:
     username = sys.argv[1]
-    t = threading.Thread(target=fetch_proc, args=(username,0))
-    t.start()
-    t.join(1)
+    zhihu.insert_user({'name': username, 'fetch': zhihu.FETCH_ING})
+    fetch_proc(username)
 else:
     threads = []
-    while not finish.is_set():
-        zhihu.slog('while ----------')
+    while True:
         i = threading.active_count()
         print('active_count', i)
+        with dblock:
+            username = zhihu.getNotFetchedUserName()
+        if username is None:
+            print('finish')
+            break
         s.acquire()
-        t = threading.Thread(target=fetch_proc, args=(None,i))
+        t = threading.Thread(target=fetch_proc, args=(username,))
         threads.append(t)
         t.start()
         zhihu.slog('start', t.name)
@@ -71,4 +67,5 @@ else:
             t.join(0.1)
             if not t.is_alive():
                 zhihu.slog(t.name, 'die')
+        threads = [t for t in threads if t.is_alive()]
     print('Complete')

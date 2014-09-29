@@ -15,8 +15,15 @@ FETCH_OK = 2
 FETCH_FAIL = 3
 
 def slog(*args):
-    with open('{}.log'.format(threading.current_thread().name), 'a') as f:
-        f.write('{}\n'.format(' '.join([str(e) for e in args])))
+    thread_name = threading.current_thread().name
+    a = thread_name.split('-')
+    if len(a) == 1:
+        filename = '{}.log'.format(thread_name)
+    else:
+        _, i = a
+        filename = 'Group-{}.log'.format(int(i) % 7)
+    with open(filename, 'a') as f:
+        f.write('[{}] [{}] {}\n'.format(time.strftime('%Y-%m-%d %H-%M-%S'), thread_name, ' '.join([str(e) for e in args])))
 
 def get_list_by_attrib(node_list, key, value):
     ret = []
@@ -139,6 +146,9 @@ def parse_answer_pure(content):
     
     q = doc.get_element_by_id('zh-question-title')
     a = q[0][0]
+    if len(a) == 0:
+        print(dom.c14n(a))
+        raise Exception('a has no text')
     question = a[0].text
     
     descript = doc.get_element_by_id('zh-question-detail')
@@ -146,16 +156,19 @@ def parse_answer_pure(content):
     
     return (question, descript, answer, vote)
 
-def get_url(conn, url):
-    try:
-        conn.request("GET", url)
-        response = conn.getresponse()
-    except http.client.ResponseNotReady as e:
-        print('http.client.ResponseNotReady')
-        return None
-    except http.client.CannotSendRequest as e:
-        print('http.client.CannotSendRequest')
-        return None
+def get_url(url):
+    conn = http.client.HTTPConnection('www.zhihu.com')
+    conn.request("GET", url)
+    while True:
+        try:
+            response = conn.getresponse()
+        except http.client.ResponseNotReady as e:
+            print('http.client.ResponseNotReady')
+            continue
+        except http.client.CannotSendRequest as e:
+            print('http.client.CannotSendRequest')
+            return None
+        break
     code = response.status
     print('.',end='')
     slog("\t[{}]".format(code))
@@ -183,7 +196,7 @@ def saveAnswer(conn, username, answer_link_list, dblock):
         slog("\t{}".format(url))
         sys.stdout.flush()
         timer.timer('saveAnswer')
-        content = get_url(conn, url)
+        content = get_url(url)
         if content is None:
             continue
         success_ratio = get_average(0 if content is None else 1, 'success_ratio')
