@@ -7,6 +7,7 @@ import timer
 import dbhelper
 import dom
 import http.client
+import socket
 
 # logic
 
@@ -101,6 +102,9 @@ def get_url(url):
         except http.client.CannotSendRequest as e:
             print('http.client.CannotSendRequest')
             return None
+        except socket.timeout as e:
+            print('wtf! timeout')
+            return None
         break
     code = response.status
     print('.',end='')
@@ -181,7 +185,11 @@ def fetch_people_page(conn, username, page = 1):
     print("\n{}\t".format(url_page), end='')
     sys.stdout.flush()
     timer.timer()
-    conn.request("GET", url_page)
+    try:
+        conn.request("GET", url_page)
+    except socket.timeout as e:
+        print('wow! timeout')
+        raise e
     response = conn.getresponse()
     t = timer.timer()
     avg = int(get_average(t, 'user page'))
