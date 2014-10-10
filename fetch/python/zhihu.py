@@ -4,6 +4,7 @@ import time, re, sys
 import threading
 import sqlite3
 import timer
+import dbhelper
 import dom
 import http.client
 
@@ -143,8 +144,8 @@ def saveAnswer(conn, username, answer_link_list, dblock):
         slog("{}\t^{}\t{}".format(url, vote, question))
 
         with dblock:
-            saveQuestion(qid, question, descript)
-            _saveAnswer(aid, qid, username, content, vote)
+            dbhelper.saveQuestion(qid, question, descript)
+            dbhelper._saveAnswer(aid, qid, username, content, vote)
     if success_ratio is not None and avg is not None:
         success_ratio = int(success_ratio*100)
         print("\tAvg: {} ms\tsuccess_ratio: {}%".format(avg, success_ratio))
@@ -188,12 +189,12 @@ def fetch_people_page(conn, username, page = 1):
     print("[{}]\t{} ms\tAvg: {} ms".format(code, t, avg))
     if code == 404:
         slog("user username fetch fail, code code")
-        update_user_by_name(username, {'fetch': FETCH_FAIL})
+        dbhelper.update_user_by_name(username, {'fetch': FETCH_FAIL})
         print( "没有这个用户", username)
         return None
     if code != 200:
         slog("user username fetch fail, code code")
-        update_user_by_name(username, {'fetch': FETCH_FAIL})
+        dbhelper.update_user_by_name(username, {'fetch': FETCH_FAIL})
         print( "奇奇怪怪的返回码", code)
         return None
     content = response.read()

@@ -2,6 +2,7 @@
 
 import http.client
 import zhihu
+import dbhelper
 
 conn = zhihu.get_conn()
 
@@ -10,10 +11,10 @@ conn = zhihu.get_conn()
 count = 0
 insert_count = 0
 while True:
-    qid = zhihu.next_question_id()
+    qid = dbhelper.next_question_id()
     if qid is None:
         break
-    zhihu.set_question_fetch(qid, zhihu.FETCH_ING)
+    dbhelper.set_question_fetch(qid, zhihu.FETCH_ING)
     url = "/question/{}".format(qid)
     conn.request("GET", url)
     response = conn.getresponse()
@@ -26,7 +27,7 @@ while True:
 
     for username, nickname in username_list.items():
         print("\t{:28s}{:8s}".format(username, nickname), end='')
-        rs = zhihu.saveUser(username, nickname)
+        rs = dbhelper.saveUser(username, nickname)
         if rs is not None:
             insert_count += 1
             print('\t+')
@@ -34,6 +35,6 @@ while True:
             print()
         count += 1
     print("\tRate {}%\n".format(int(insert_count/count * 100)))
-    zhihu.set_question_fetch(qid, zhihu.FETCH_OK)
+    dbhelper.set_question_fetch(qid, zhihu.FETCH_OK)
 
 conn.close()
