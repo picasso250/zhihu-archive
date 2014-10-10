@@ -145,7 +145,11 @@ def parse_answer_pure(content):
     vote = int(span.text)
     
     q = doc.get_element_by_id('zh-question-title')
-    a = q[0][0]
+    try:
+        a = q[0][0]
+    except Exception as e:
+        print(dom.c14n(q))
+        raise e
     question = a.text
     
     descript = doc.get_element_by_id('zh-question-detail')
@@ -153,8 +157,11 @@ def parse_answer_pure(content):
     
     return (question, descript, answer, vote)
 
+def get_conn():
+    return http.client.HTTPConnection('www.zhihu.com', timeout=7)
+
 def get_url(url):
-    conn = http.client.HTTPConnection('www.zhihu.com')
+    conn = get_conn()
     conn.request("GET", url)
     while True:
         try:

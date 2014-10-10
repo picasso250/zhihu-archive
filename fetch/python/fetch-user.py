@@ -3,7 +3,7 @@
 import http.client
 import zhihu
 
-conn = http.client.HTTPConnection('www.zhihu.com')
+conn = zhihu.get_conn()
 
 # print("there are ",count(ids)," questions to fetch\n")
 

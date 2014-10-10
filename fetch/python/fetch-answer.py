@@ -17,7 +17,7 @@ finish.clear()
 def fetch_proc(username):
     with dblock:
         zhihu.update_user_by_name(username, {'fetch': zhihu.FETCH_ING})
-    conn = http.client.HTTPConnection('www.zhihu.com')
+    conn = zhihu.get_conn()
     content = zhihu.fetch_people_page(conn, username)
     if content is None:
         conn.close()
