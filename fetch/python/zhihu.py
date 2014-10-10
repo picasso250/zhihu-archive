@@ -146,9 +146,6 @@ def parse_answer_pure(content):
     
     q = doc.get_element_by_id('zh-question-title')
     a = q[0][0]
-    if len(a) == 0:
-        print(dom.c14n(a))
-        raise Exception('a has no text')
     question = a.text
     
     descript = doc.get_element_by_id('zh-question-detail')
