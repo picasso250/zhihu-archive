@@ -14,7 +14,7 @@ while True:
     qid = dbhelper.next_question_id()
     if qid is None:
         break
-    dbhelper.set_question_fetch(qid, zhihu.FETCH_ING)
+    dbhelper.set_question_fetch(qid, dbhelper.FETCH_ING)
     url = "/question/{}".format(qid)
     conn.request("GET", url)
     response = conn.getresponse()
@@ -35,6 +35,6 @@ while True:
             print()
         count += 1
     print("\tRate {}%\n".format(int(insert_count/count * 100)))
-    dbhelper.set_question_fetch(qid, zhihu.FETCH_OK)
+    dbhelper.set_question_fetch(qid, dbhelper.FETCH_OK)
 
 conn.close()

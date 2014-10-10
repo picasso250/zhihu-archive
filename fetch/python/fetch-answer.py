@@ -17,7 +17,7 @@ finish.clear()
 
 def fetch_proc(username):
     with dblock:
-        dbhelper.update_user_by_name(username, {'fetch': zhihu.FETCH_ING})
+        dbhelper.update_user_by_name(username, {'fetch': dbhelper.FETCH_ING})
     conn = zhihu.get_conn()
     content = zhihu.fetch_people_page(conn, username)
     if content is None:
@@ -40,14 +40,14 @@ def fetch_proc(username):
             link_list = zhihu.get_answer_link_list(content)
             zhihu.saveAnswer(conn, username, link_list, dblock)
     with dblock:
-        dbhelper.update_user_by_name(username, {'fetch': zhihu.FETCH_OK})
+        dbhelper.update_user_by_name(username, {'fetch': dbhelper.FETCH_OK})
     conn.close()
     zhihu.slog('### after saveAnswer ###')
     s.release()
 
 if len(sys.argv) > 1:
     username = sys.argv[1]
-    dbhelper.insert_user({'name': username, 'fetch': zhihu.FETCH_ING})
+    dbhelper.insert_user({'name': username, 'fetch': dbhelper.FETCH_ING})
     fetch_proc(username)
 else:
     threads = []
