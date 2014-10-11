@@ -1,5 +1,5 @@
 <?php
-
+phpinfo();exit;
 require __DIR__.'/lib.php';
 require __DIR__.'/vendor/autoload.php';
 
