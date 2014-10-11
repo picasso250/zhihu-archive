@@ -18,3 +18,13 @@ function _req($key = null, $default = null)
         return $_REQUEST;
     return isset($_REQUEST[$key]) ? ($_REQUEST[$key]) : $default;
 }
+
+function app_log($msg)
+{
+    // /home/bae/log/app.log
+    $dir = __DIR__;
+    $file = $dir.'/app.log';
+    $msg = call_user_func_array('sprintf', func_get_args());
+    $msg = sprintf("[%s] %s\n", date('Y-m-d H:i:s'), $msg);
+    return error_log($msg, 3, $file);
+}

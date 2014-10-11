@@ -1,7 +1,7 @@
 <?php
 
 require __DIR__.'/lib.php';
-require (__DIR__).'/vendor/autoload.php';
+require __DIR__.'/vendor/autoload.php';
 
 $dsn = 'mysql:dbname=zhihu;host=127.0.0.1';
 $user = 'root';
