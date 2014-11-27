@@ -2,6 +2,7 @@
 
 $type = _post('type');
 $data = _post('data');
+app_log('recieve type %s with %s', $type, json_encode($data));
 $entry = ORM::forTable($type)->findOne($data['id']);
 if ($entry) {
     $code = 1;
