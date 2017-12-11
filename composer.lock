@@ -1,10 +1,51 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "This file is @generated automatically"
     ],
-    "hash": "ec8c785bd1527ef9499f5d3c8b5d2f11",
+    "content-hash": "08b0f5a854b498bcce10604c22130285",
     "packages": [
+        {
+            "name": "electrolinux/phpquery",
+            "version": "0.9.6",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/electrolinux/phpquery.git",
+                "reference": "6cb8afcfe8cd4ce45f2f8c27d561383037c27a3a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/electrolinux/phpquery/zipball/6cb8afcfe8cd4ce45f2f8c27d561383037c27a3a",
+                "reference": "6cb8afcfe8cd4ce45f2f8c27d561383037c27a3a",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "phpQuery/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Tobiasz Cudnik",
+                    "email": "tobiasz.cudnik@gmail.com",
+                    "homepage": "https://github.com/TobiaszCudnik",
+                    "role": "Developer"
+                },
+                {
+                    "name": "didier Belot",
+                    "role": "Packager"
+                }
+            ],
+            "description": "phpQuery is a server-side, chainable, CSS3 selector driven Document Object Model (DOM) API based on jQuery JavaScript Library",
+            "homepage": "http://code.google.com/p/phpquery/",
+            "time": "2013-03-21T12:39:33+00:00"
+        },
         {
             "name": "j4mie/idiorm",
             "version": "v1.4.1",
@@ -61,19 +102,19 @@
                 "orm",
                 "query builder"
             ],
-            "time": "2013-12-12 10:25:27"
+            "time": "2013-12-12T10:25:27+00:00"
         },
         {
             "name": "klein/klein",
             "version": "v1.2.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/chriso/klein.php.git",
+                "url": "https://github.com/klein/klein.php.git",
                 "reference": "a086ee79d4ad46cd0f65fb1ea8ebc321874818c1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/chriso/klein.php/zipball/a086ee79d4ad46cd0f65fb1ea8ebc321874818c1",
+                "url": "https://api.github.com/repos/klein/klein.php/zipball/a086ee79d4ad46cd0f65fb1ea8ebc321874818c1",
                 "reference": "a086ee79d4ad46cd0f65fb1ea8ebc321874818c1",
                 "shasum": ""
             },
@@ -109,7 +150,7 @@
                 "routing",
                 "sinatra"
             ],
-            "time": "2013-06-27 05:36:44"
+            "time": "2013-06-27T05:36:44+00:00"
         },
         {
             "name": "masterminds/html5",
@@ -166,23 +207,15 @@
                 "serializer",
                 "xml"
             ],
-            "time": "2014-02-12 15:33:18"
+            "time": "2014-02-12T15:33:18+00:00"
         }
     ],
-    "packages-dev": [
-
-    ],
-    "aliases": [
-
-    ],
+    "packages-dev": [],
+    "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [
-
-    ],
-    "platform": [
-
-    ],
-    "platform-dev": [
-
-    ]
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
 }

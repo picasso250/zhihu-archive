@@ -2,6 +2,7 @@
     "require": {
         "masterminds/html5": "1.*",
         "klein/klein": "v1.2.0",
-        "j4mie/idiorm": "1.4.x"
+        "j4mie/idiorm": "1.4.x",
+        "electrolinux/phpquery": "^0.9.6"
     }
 }

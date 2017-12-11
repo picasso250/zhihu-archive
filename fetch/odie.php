@@ -14,12 +14,13 @@ function odie_get($url, $opts = null) {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_TIMEOUT, 10); // wait
     curl_setopt($ch, CURLOPT_DNS_CACHE_TIMEOUT, 1200); // cache dns 20 minutes
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0); // solve 60      SSL certificate problem: unable to get local issuer certificate
     $content = curl_exec($ch);
     if ($errno = curl_errno($ch)) {
         return array($errno, curl_error($ch));
     }
     $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    
+
     if ($has_dir && $code == 200) {
         file_put_contents($filename, $content);
     }
