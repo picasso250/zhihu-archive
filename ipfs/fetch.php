@@ -38,6 +38,7 @@ file_put_contents($file, $html);
 $ret = exec("ipfs add -r data");
 $a = explode(' ', $ret);
 echo "http://localhost:8080/ipfs/$a[1]/$id.html\n";
+echo "https://ipfs.io/ipfs/$a[1]/$id.html\n";
 
 function fetch_css($m) {
     global $root;
