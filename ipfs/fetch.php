@@ -1,5 +1,7 @@
 <?php
 
+// todo support douban
+
 // check param
 if (!isset($argv[1])) {
     echo "Usage: $argv[0] answer_url\n";
@@ -28,6 +30,8 @@ $html = preg_replace_callback('/([^"]+\.css)"/', '_fetch_res', $html);
 
 // make image visible
 $html = preg_replace_callback('/<img src="([^"]+)" ([^>]+) data-actualsrc="([^"]+)">/', '_image_replace', $html);
+
+// todo: video (iframe)
 
 // trim script or it will cause repeat load problem
 $html = preg_replace('#<script src="https://static.zhihu.com/heifetz/[\-\w\.]+\.js"( async="")?></script>#', '', $html);
