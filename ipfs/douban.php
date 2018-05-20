@@ -1,9 +1,12 @@
 <?php
 
+function book_douban_com($url) {
+    return movie_douban_com($url);
+}
 function movie_douban_com($url) {
     global $root;
         
-    // todo support book and music
+    // todo support music?
 
     // check url of movie
     if (!preg_match('/(\d+)\/$/', $url, $m)) {
