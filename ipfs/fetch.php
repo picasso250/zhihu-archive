@@ -1,6 +1,5 @@
 <?php
 
-// todo support douban
 require "zhihu.php";
 require "douban.php";
 
@@ -33,6 +32,7 @@ if (!function_exists($func)) {
 $name = $func($url);
 
 // add to ipfs
+// todo check ipfs exists
 $cmd = "ipfs add -r $root";
 echo "$cmd\n";
 $ret = exec($cmd);
