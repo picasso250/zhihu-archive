@@ -1,4 +1,4 @@
-# archive internet to ipfs
+# Archive Internet to IPFS
 
 Usage:
     
@@ -9,6 +9,6 @@ Usage:
 
 It will download the page, and show you the ipfs address.
 
-Prequisition:
+Prequisitions:
 - ipfs
 - php
