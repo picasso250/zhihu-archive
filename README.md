@@ -15,3 +15,8 @@ It will download the page, and show you the ipfs address.
 Prequisitions:
 - ipfs
 - php
+
+Now suport:
+
+- zhihu answer
+- douban review for movie and book
