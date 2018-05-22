@@ -22,6 +22,7 @@ function movie_douban_com($url) {
 
     // make image visible (solve 403 problem)
     $html = preg_replace_callback('/<(img(?: [^>]+)?) src="([^"]+)" ([^>]+)\/>/', '_douban_image_replace', $html);
+    $html = preg_replace_callback('/<img ([^>]+) src="([^"]+)"/', '_image_local', $html);
 
     // save
     $id = $m[1];

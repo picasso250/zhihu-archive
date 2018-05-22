@@ -20,6 +20,9 @@ function www_zhihu_com($answer_url) {
     // make image visible
     $html = preg_replace_callback('/<img src="([^"]+)" ([^>]+) data-actualsrc="([^"]+)">/', '_zhihu_image_replace', $html);
 
+    // icon of avatar
+    $html = preg_replace_callback('/<img ([^>]+) src="([^"]+)"/', '_image_local', $html);
+
     // todo: video (iframe)
     $html = preg_replace_callback('#<a class="video-box" href="([^"]+)"(.+?</a>)#', '_zhihu_video_replace', $html);
 

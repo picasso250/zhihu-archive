@@ -63,3 +63,8 @@ function _save_res($url) {
     }
     return substr($a['path'],1);
 }
+function _image_local($m) {
+    $url = $m[2];
+    $new_url = _save_res($url);
+    return "<img $m[1] src=\"$new_url\"";
+}
