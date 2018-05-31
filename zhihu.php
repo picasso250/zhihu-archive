@@ -114,7 +114,7 @@ function _zhihu_people_answer_one_page($html, $page, $total, $username) {
     // replace answers
     $p1 = strpos($html, '<div class="List-item">');
     $p2 = strpos($html, '<div class="Pagination"');
-    $html = substr($html,0,$p1).$as_s.substr($html,$p2);
+    $html = substr_replace($html,$as_s,$p1,$p2-$p1);
     // this code has bug, it will replace multi times
     // $html = preg_replace('/<div class="List-item">.+<div class="Pagination"/', $as_s.'<div class="Pagination"', $html, 1, $count);
     // echo "#$page html\n$html\n#$page count $count\n";
