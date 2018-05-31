@@ -95,7 +95,7 @@ function _zhihu_people_answer_one_page($html, $page, $total, $username) {
     // render answer
     echo "render answer\n";
     $as=[];
-    foreach ($j['data'] as $key => $answer) {
+    foreach ($j['data'] as $i => $answer) {
         $question_title = $answer['question']['title'];
         $avatar_img=str_replace('{size}','xs',$answer['author']['avatar_url_template']);
         $uid=$username;
@@ -106,23 +106,26 @@ function _zhihu_people_answer_one_page($html, $page, $total, $username) {
         $comment_num=$answer['comment_count'];
         ob_start();
         include 'item.php';
-        $as[] = ob_get_clean();
+        $as[] = $a_ = ob_get_clean();
     }
-    $as = implode(',',$as);
-
+    $as_s = implode('',$as);
+    // echo "#$page as\n$as_s\n";
 
     // replace answers
-    $html = preg_replace('/<div class="List-item">.+<div class="Pagination"/', $as.'<div class="Pagination"', $html);
+    $p1 = strpos($html, '<div class="List-item">');
+    $p2 = strpos($html, '<div class="Pagination"');
+    $html = substr($html,0,$p1).$as_s.substr($html,$p2);
+    // this code has bug, it will replace multi times
+    // $html = preg_replace('/<div class="List-item">.+<div class="Pagination"/', $as_s.'<div class="Pagination"', $html, 1, $count);
+    // echo "#$page html\n$html\n#$page count $count\n";
 
     // replace page link
     $html = preg_replace('#<div class="Pagination">(.+?)</div>#', '<div class="Pagination">'._zhihu_page_link_html($username, $page, $total).'</div>', $html);
 
-    echo "trans css\n";
     // trans css
     $html = preg_replace_callback('/"([^"]+\.css)"/', '_fetch_res', $html);
     // $html = preg_replace_callback('/([^"]+\.js)"/', '_fetch_res', $html);
 
-    echo "make image visible\n";
     // make image visible
     $html = preg_replace_callback('/<img src="([^"]+)" ([^>]+) data-actualsrc="([^"]+)">/', '_zhihu_image_replace', $html);
 
