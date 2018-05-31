@@ -27,7 +27,7 @@ function _zhihu_one_answer($answer_url) {
     $html = file_get_contents($answer_url);
 
     // trans css
-    $html = preg_replace_callback('/([^"]+\.css)"/', '_fetch_res', $html);
+    $html = preg_replace_callback('/"([^"]+\.css)"/', '_fetch_res', $html);
 
     // make image visible
     $html = preg_replace_callback('/<img src="([^"]+)" ([^>]+) data-actualsrc="([^"]+)">/', '_zhihu_image_replace', $html);
@@ -63,7 +63,6 @@ function _zhihu_people_answer_list($url, $username) {
     }
 
     foreach (range(1,$total) as $_ => $index) {
-        // sleep(1);
         echo $url."\tpage=$index\n";
         $html = _zhihu_people_answer_one_page($raw_html, $index, $total, $username);
         $file = "$root/${username}_$index.html";
@@ -111,7 +110,6 @@ function _zhihu_people_answer_one_page($html, $page, $total, $username) {
     }
     $as = implode(',',$as);
 
-    echo "process html\n";
 
     // replace answers
     $html = preg_replace('/<div class="List-item">.+<div class="Pagination"/', $as.'<div class="Pagination"', $html);
@@ -119,10 +117,12 @@ function _zhihu_people_answer_one_page($html, $page, $total, $username) {
     // replace page link
     $html = preg_replace('#<div class="Pagination">(.+?)</div>#', '<div class="Pagination">'._zhihu_page_link_html($username, $page, $total).'</div>', $html);
 
+    echo "trans css\n";
     // trans css
-    $html = preg_replace_callback('/([^"]+\.css)"/', '_fetch_res', $html);
+    $html = preg_replace_callback('/"([^"]+\.css)"/', '_fetch_res', $html);
     // $html = preg_replace_callback('/([^"]+\.js)"/', '_fetch_res', $html);
 
+    echo "make image visible\n";
     // make image visible
     $html = preg_replace_callback('/<img src="([^"]+)" ([^>]+) data-actualsrc="([^"]+)">/', '_zhihu_image_replace', $html);
 

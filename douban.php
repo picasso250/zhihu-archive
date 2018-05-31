@@ -18,7 +18,7 @@ function movie_douban_com($url) {
     $html = file_get_contents($url);
 
     // trans css
-    $html = preg_replace_callback('/([^"]+\.css)"/', '_fetch_res', $html);
+    $html = preg_replace_callback('/"([^"]+\.css)"/', '_fetch_res', $html);
 
     // make image visible (solve 403 problem)
     $html = preg_replace_callback('/<(img(?: [^>]+)?) src="([^"]+)" ([^>]+)\/>/', '_douban_image_replace', $html);

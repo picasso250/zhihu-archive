@@ -48,7 +48,7 @@ function _fetch_res($m) {
     $url = $m[1];
     if ($url[0]=='/'&&$url[1]=='/')
         $url = 'https:'.$url;
-    return _save_res($url).'"';
+    return '"'._save_res($url).'"';
 }
 
 function _save_res($url) {
