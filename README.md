@@ -19,8 +19,8 @@ Prequisitions 依赖 :
 
 Now suport 现支持:
 
-- zhihu answer
-- douban review for movie and book
+- 知乎回答
+- 豆瓣影评、书评
 
 Issues are welcomed.
 欢迎提 Issue。

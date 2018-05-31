@@ -32,9 +32,8 @@ if (!function_exists($func)) {
 }
 $name = $func($url);
 
-// add to ipfs
-// todo check ipfs exists
 if (command_exists('ipfs')) {
+    // add to ipfs
     $cmd = "ipfs add -r $root";
     echo "$cmd\n";
     $ret = exec($cmd);
