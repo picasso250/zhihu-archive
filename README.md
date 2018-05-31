@@ -19,8 +19,8 @@ Prequisitions 依赖 :
 
 Now suport 现支持:
 
-- 知乎回答
-- 豆瓣影评、书评
+- 知乎（回答、用户回答列表）
+- 豆瓣（影评、书评）
 
 Issues are welcomed.
 欢迎提 Issue。
